@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teste das APIs oficiais de índices</title>
+<link rel="stylesheet" href="css/estilo.css">
+<style>
+  .fonte { display:grid; grid-template-columns: 1fr auto; gap:12px 16px; align-items:start;
+           padding:16px 0; border-bottom:1px solid var(--borda); }
+  .fonte:last-child { border-bottom:none; }
+  .fonte-nome { font-weight:700; }
+  .fonte-uso  { font-size:.85rem; color:var(--texto-suave); margin-top:2px; }
+  .fonte-url  { font-family:ui-monospace, Consolas, monospace; font-size:.74rem;
+                color:var(--texto-fraco); margin-top:6px; word-break:break-all; }
+  .chip { display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px;
+          font-size:.82rem; font-weight:700; white-space:nowrap; }
+  .chip-esperando { background:var(--superficie-alta); color:var(--texto-fraco); }
+  .chip-ok    { background:rgba(47,214,122,.15); color:var(--verde); }
+  .chip-falha { background:rgba(255,107,107,.15); color:var(--vermelho); }
+  .valor { margin-top:8px; font-variant-numeric:tabular-nums; font-size:.9rem; }
+  .valor b { color:var(--dourado); }
+  .motivo { margin-top:8px; font-size:.84rem; color:#ffc9c9; }
+</style>
+</head>
+<body>
+
+<main class="conteudo">
+  <section class="chamada">
+    <h1>As APIs oficiais respondem no seu navegador?</h1>
+    <p>Esta página existe para responder uma única pergunta antes de a gente construir a calculadora
+       de atualização monetária: <strong>dá para buscar os índices direto da fonte oficial, sem
+       back-end e sem ninguém precisar digitar tabela todo mês?</strong></p>
+  </section>
+
+  <div id="veredito" class="aviso aviso-neutro">Testando as fontes…</div>
+
+  <div class="cartao-painel">
+    <h2>Fontes testadas</h2>
+    <p class="subtitulo">Cada linha tenta buscar os últimos valores publicados. Se aparecer um número,
+       <strong>confira se ele bate com o índice que você conhece</strong> — é assim que a gente valida
+       que o código da série está certo.</p>
+    <div id="lista"></div>
+  </div>
+
+  <div class="passo" style="margin-top:20px">
+    <div class="passo-titulo">O que fazer com o resultado</div>
+    <ul class="lista-formula">
+      <li><strong>Tudo verde:</strong> a calculadora pode buscar os índices sozinha, sempre atualizada,
+          sem manutenção mensal. É o melhor cenário.</li>
+      <li><strong>Tudo vermelho com "bloqueado pelo navegador":</strong> a API existe e é pública, mas não
+          libera acesso a partir de outro site. Nesse caso a calculadora precisa ou de um back-end
+          pequeno, ou de tabela de índices atualizada manualmente.</li>
+      <li><strong>Vermelho com "sem conexão":</strong> pode ser a rede do escritório bloqueando.
+          Vale testar de outra rede (4G do celular, por exemplo) antes de concluir.</li>
+      <li><strong>Misturado:</strong> a gente usa a fonte que funcionar.</li>
+    </ul>
+    <p class="obs">Importante: este arquivo é de uso interno, não vai para o site.
+       Abra com dois cliques, direto do seu computador.</p>
+  </div>
+</main>
+
+<script>
+/* Séries do SGS (Sistema Gerenciador de Séries Temporais) do Banco Central.
+   Os códigos abaixo precisam da sua conferência: a página mostra o valor devolvido
+   justamente para você comparar com o índice que conhece. */
+var FONTES = [
+  { nome:'IPCA — variação mensal', orgao:'Banco Central (SGS 433)',
+    uso:'Índice oficial da inflação. Usado em contratos e em boa parte das correções.',
+    url:'https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados/ultimos/3?formato=json' },
+
+  { nome:'INPC — variação mensal', orgao:'Banco Central (SGS 188)',
+    uso:'Muito usado em reclamações trabalhistas e reajustes salariais.',
+    url:'https://api.bcb.gov.br/dados/serie/bcdata.sgs.188/dados/ultimos/3?formato=json' },
+
+  { nome:'IGP-M — variação mensal', orgao:'Banco Central (SGS 189)',
+    uso:'O índice dos contratos de aluguel.',
+    url:'https://api.bcb.gov.br/dados/serie/bcdata.sgs.189/dados/ultimos/3?formato=json' },
+
+  { nome:'SELIC — acumulada no mês', orgao:'Banco Central (SGS 4390)',
+    uso:'Correção de débitos e créditos tributários federais.',
+    url:'https://api.bcb.gov.br/dados/serie/bcdata.sgs.4390/dados/ultimos/3?formato=json' },
+
+  { nome:'TR — Taxa Referencial', orgao:'Banco Central (SGS 226)',
+    uso:'Correção do FGTS e de alguns contratos.',
+    url:'https://api.bcb.gov.br/dados/serie/bcdata.sgs.226/dados/ultimos/3?formato=json' },
+
+  { nome:'IPCA — série do IBGE', orgao:'IBGE (SIDRA, agregado 1737)',
+    uso:'Mesma informação do IPCA, por outra fonte oficial. Serve de reserva.',
+    url:'https://servicodados.ibge.gov.br/api/v3/agregados/1737/periodos/-3/variaveis/63?localidades=N1[all]' }
+];
+
+var lista = document.getElementById('lista');
+var veredito = document.getElementById('veredito');
+var ok = 0, falha = 0, bloqueio = 0;
+
+FONTES.forEach(function (f, i) {
+  var bloco = document.createElement('div');
+  bloco.className = 'fonte';
+  bloco.innerHTML =
+    '<div>' +
+      '<div class="fonte-nome">' + f.nome + '</div>' +
+      '<div class="fonte-uso">' + f.orgao + ' — ' + f.uso + '</div>' +
+      '<div class="fonte-url">' + f.url + '</div>' +
+      '<div id="detalhe-' + i + '"></div>' +
+    '</div>' +
+    '<span class="chip chip-esperando" id="chip-' + i + '">testando…</span>';
+  lista.appendChild(bloco);
+
+  var chip = function () { return document.getElementById('chip-' + i); };
+  var detalhe = function () { return document.getElementById('detalhe-' + i); };
+
+  var expirou = false;
+  var relogio = setTimeout(function () { expirou = true; }, 20000);
+
+  fetch(f.url, { method: 'GET' })
+    .then(function (r) {
+      if (!r.ok) throw new Error('o servidor respondeu ' + r.status);
+      return r.json();
+    })
+    .then(function (dados) {
+      clearTimeout(relogio);
+      if (expirou) throw new Error('demorou demais para responder');
+      ok++;
+      chip().className = 'chip chip-ok';
+      chip().textContent = '✓ respondeu';
+      detalhe().innerHTML = '<div class="valor">Últimos valores: ' + resumir(dados) + '</div>';
+      atualizarVeredito();
+    })
+    .catch(function (erro) {
+      clearTimeout(relogio);
+      falha++;
+      var msg = String(erro && erro.message || erro);
+      var motivo;
+      if (/failed to fetch|networkerror|load failed/i.test(msg)) {
+        bloqueio++;
+        motivo = 'Bloqueado pelo navegador ou sem conexão. Costuma ser uma destas três coisas: ' +
+                 'a API não libera acesso a partir de outra página, a rede do escritório está ' +
+                 'barrando, ou o site está fora do ar. Teste de outra rede para separar os casos.';
+      } else {
+        motivo = msg;
+      }
+      chip().className = 'chip chip-falha';
+      chip().textContent = '✕ não respondeu';
+      detalhe().innerHTML = '<div class="motivo">' + motivo + '</div>';
+      atualizarVeredito();
+    });
+});
+
+function resumir(dados) {
+  try {
+    if (Array.isArray(dados)) {
+      return dados.map(function (d) {
+        return '<b>' + d.valor + '</b> <span style="opacity:.7">(' + d.data + ')</span>';
+      }).join(' &nbsp;·&nbsp; ');
+    }
+    // formato do IBGE
+    var s = dados[0].resultados[0].series[0].serie;
+    return Object.keys(s).map(function (k) {
+      return '<b>' + s[k] + '</b> <span style="opacity:.7">(' + k + ')</span>';
+    }).join(' &nbsp;·&nbsp; ');
+  } catch (e) {
+    return '<span style="opacity:.7">respondeu, mas em formato inesperado</span>';
+  }
+}
+
+function atualizarVeredito() {
+  if (ok + falha < FONTES.length) return;
+  if (falha === 0) {
+    veredito.className = 'aviso aviso-neutro';
+    veredito.innerHTML = '<strong>✓ Todas as ' + FONTES.length + ' fontes responderam.</strong> ' +
+      'A calculadora pode buscar os índices direto da fonte oficial, sem back-end e sem ' +
+      'manutenção mensal. Confira se os números acima batem com os índices que você conhece.';
+  } else if (ok === 0) {
+    veredito.className = 'aviso aviso-erro';
+    veredito.innerHTML = '<strong>✕ Nenhuma fonte respondeu.</strong> ' +
+      (bloqueio ? 'Antes de concluir qualquer coisa, teste de outra rede — pode ser bloqueio do escritório. ' : '') +
+      'Se falhar em qualquer rede, a calculadora vai precisar de tabela de índices atualizada à mão ' +
+      'ou de um back-end pequeno.';
+  } else {
+    veredito.className = 'aviso aviso-forte';
+    veredito.innerHTML = '<strong>Resultado misturado: ' + ok + ' de ' + FONTES.length +
+      ' fontes responderam.</strong> Dá para trabalhar com as que funcionaram. Me diga quais ficaram verdes.';
+  }
+}
+</script>
+</body>
+</html>
