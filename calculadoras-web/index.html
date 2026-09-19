@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadoras M Contabilidade — Imposto de Renda e Enquadramento Tributário</title>
+<meta name="description" content="Calculadora gratuita de Imposto de Renda na folha e simulador de enquadramento tributário (Simples Nacional, Lucro Presumido e Lucro Real). Ferramenta da M Contabilidade, Recife-PE.">
+<link rel="stylesheet" href="css/estilo.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230b1220'/><text x='50' y='68' font-size='52' font-family='Georgia,serif' font-weight='700' fill='%23ffb020' text-anchor='middle'>MC</text></svg>">
+</head>
+<body>
+
+<header class="cabecalho">
+  <div class="conteudo cabecalho-interno">
+    <div class="marca">
+      <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
+        <rect x="2" y="2" width="96" height="96" rx="20" fill="none" stroke="#ffb020" stroke-width="4"/>
+        <text x="50" y="68" font-size="50" font-family="Georgia, serif" font-weight="700" fill="#ffb020" text-anchor="middle">MC</text>
+      </svg>
+      <div class="marca-texto">
+        <span class="marca-nome" data-escritorio="nome">M Contabilidade</span>
+        <span class="marca-sub">Contabilidade, tributos e departamento pessoal — Recife/PE</span>
+      </div>
+    </div>
+    <a class="botao botao-whats botao-topo" data-whatsapp href="#" target="_blank" rel="noopener">Falar com um contador</a>
+  </div>
+</header>
+
+<main class="conteudo">
+
+  <section class="chamada">
+    <h1>Calculadoras gratuitas</h1>
+    <p>Duas ferramentas para você entender seus números antes de tomar decisão:
+       o imposto que sai do seu salário e o regime tributário que pode custar menos para a sua empresa.
+       Todo cálculo aparece <strong>passo a passo</strong>, para você conferir na mão.</p>
+  </section>
+
+  <div class="abas" role="tablist">
+    <button class="aba-botao ativo" data-aba="painel-ir" role="tab" aria-selected="true">
+      <span class="aba-num">1</span> Imposto de Renda — Pessoa Física
+    </button>
+    <button class="aba-botao" data-aba="painel-enq" role="tab" aria-selected="false">
+      <span class="aba-num">2</span> Enquadramento Tributário — Empresa
+    </button>
+  </div>
+
+  <!-- ============================ ABA 1 ============================ -->
+  <section class="aba-painel ativo" id="painel-ir" role="tabpanel">
+    <div class="cartao-painel">
+      <h2>Calculadora de Imposto de Renda na folha</h2>
+      <p class="subtitulo">Calcula o INSS, a base do IRRF, o imposto e o salário líquido estimado,
+         já com a <strong>redução do imposto da Lei nº 15.270/2025</strong>, em vigor desde janeiro de 2026.</p>
+
+      <form id="form-ir" novalidate>
+        <div class="campos">
+          <div class="campo">
+            <label for="ir-salario">Salário bruto mensal <span class="obrigatorio">*</span></label>
+            <div class="entrada-prefixo">
+              <span>R$</span>
+              <input type="text" id="ir-salario" inputmode="decimal" placeholder="3.500,00" autocomplete="off">
+            </div>
+            <small>Valor tributável do mês (salário + adicionais). Pode digitar 3500 ou 3.500,00.</small>
+          </div>
+
+          <div class="campo">
+            <label for="ir-dependentes">Número de dependentes</label>
+            <input type="number" id="ir-dependentes" min="0" step="1" value="0">
+            <small>Dedução de R$ 189,59 por dependente, por mês.</small>
+          </div>
+
+          <div class="campo">
+            <label for="ir-inss">INSS já descontado <span class="opcional">(opcional)</span></label>
+            <div class="entrada-prefixo">
+              <span>R$</span>
+              <input type="text" id="ir-inss" inputmode="decimal" placeholder="deixe vazio para calcular" autocomplete="off">
+            </div>
+            <small>Se você tem o contracheque em mãos, informe o INSS exato. Se deixar vazio, calculamos pela tabela oficial.</small>
+          </div>
+        </div>
+
+        <div class="acoes">
+          <button type="submit" class="botao botao-principal">Calcular</button>
+          <button type="reset" class="botao botao-secundario">Limpar</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="resultado-ir" class="resultado"></div>
+  </section>
+
+  <!-- ============================ ABA 2 ============================ -->
+  <section class="aba-painel" id="painel-enq" role="tabpanel">
+    <div class="cartao-painel">
+      <h2>Simulador de Enquadramento Tributário</h2>
+      <p class="subtitulo">Compara, em estimativa, a carga anual no <strong>Simples Nacional</strong>,
+         <strong>Lucro Presumido</strong> e <strong>Lucro Real</strong>.</p>
+
+      <div class="aviso aviso-forte">
+        <strong>Leia antes de usar:</strong> esta é uma simulação simplificada e educativa.
+        O enquadramento ideal depende de análise detalhada — fale com a M Contabilidade.
+      </div>
+
+      <form id="form-enq" novalidate>
+        <div class="campos">
+          <div class="campo campo-largo">
+            <label for="enq-faturamento">Faturamento anual estimado <span class="obrigatorio">*</span></label>
+            <div class="entrada-prefixo">
+              <span>R$</span>
+              <input type="text" id="enq-faturamento" inputmode="decimal" placeholder="600.000,00" autocomplete="off">
+            </div>
+            <small>Receita bruta dos 12 meses.</small>
+          </div>
+
+          <div class="campo campo-largo">
+            <label>Tipo de atividade <span class="obrigatorio">*</span></label>
+            <div class="opcoes">
+              <label class="opcao"><input type="radio" name="enq-atividade" value="comercio" checked> Comércio</label>
+              <label class="opcao"><input type="radio" name="enq-atividade" value="industria"> Indústria</label>
+              <label class="opcao"><input type="radio" name="enq-atividade" value="servico"> Serviço</label>
+            </div>
+          </div>
+
+          <div class="campo campo-largo" id="bloco-tipo-servico">
+            <label for="enq-tipo-servico">Tipo de serviço</label>
+            <select id="enq-tipo-servico">
+              <option value="fatorR">Sujeito ao Fator R — Anexo III ou V conforme a folha (ex.: contabilidade, TI, medicina, engenharia, fisioterapia)</option>
+              <option value="anexoIII">Serviço do Anexo III independente do Fator R (ex.: salão, academia, agência de viagem, manutenção)</option>
+              <option value="anexoIV">Serviço do Anexo IV (construção civil, vigilância, limpeza, advocacia) — CPP fora do DAS</option>
+            </select>
+            <small>Na dúvida, deixe na primeira opção: o simulador calcula o Fator R pela folha informada.</small>
+          </div>
+
+          <div class="campo">
+            <label for="enq-folha">Folha anual (salários + pró-labore)</label>
+            <div class="entrada-prefixo">
+              <span>R$</span>
+              <input type="text" id="enq-folha" inputmode="decimal" placeholder="120.000,00" autocomplete="off">
+            </div>
+            <small>Usada para o Fator R e para a CPP patronal nos regimes normais.</small>
+          </div>
+
+          <div class="campo" id="bloco-iss">
+            <label for="enq-iss">Alíquota de ISS do município</label>
+            <div class="entrada-sufixo">
+              <input type="text" id="enq-iss" inputmode="decimal" value="5">
+              <span>%</span>
+            </div>
+            <small>Varia de 2% a 5% conforme o município e o serviço.</small>
+          </div>
+
+          <div class="campo" id="bloco-icms">
+            <label for="enq-icms">ICMS efetivo estimado</label>
+            <div class="entrada-sufixo">
+              <input type="text" id="enq-icms" inputmode="decimal" value="0">
+              <span>%</span>
+            </div>
+            <small>Percentual sobre o faturamento, já líquido de créditos. Deixe 0 se não souber —
+                   mas atenção: o DAS do Simples já inclui ICMS, então o comparativo fica incompleto.</small>
+          </div>
+
+          <div class="campo">
+            <label for="enq-margem">Margem de lucro estimada (Lucro Real)</label>
+            <div class="entrada-sufixo">
+              <input type="text" id="enq-margem" inputmode="decimal" value="10">
+              <span>%</span>
+            </div>
+            <small>Lucro antes do IRPJ/CSLL, como percentual do faturamento.</small>
+          </div>
+
+          <div class="campo">
+            <label for="enq-creditos">Créditos de PIS/COFINS (Lucro Real)</label>
+            <div class="entrada-sufixo">
+              <input type="text" id="enq-creditos" inputmode="decimal" value="60">
+              <span>%</span>
+            </div>
+            <small>Compras e insumos que geram crédito, como percentual do faturamento.</small>
+          </div>
+        </div>
+
+        <div class="acoes">
+          <button type="submit" class="botao botao-principal">Simular comparativo</button>
+          <button type="reset" class="botao botao-secundario">Limpar</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="resultado-enq" class="resultado"></div>
+  </section>
+
+  <section class="fontes">
+    <h3>Fontes das tabelas utilizadas</h3>
+    <ul>
+      <li><strong>INSS:</strong> Portaria Interministerial MPS/MF nº 13, de 09/01/2026 — vigente desde 01/2026.
+          Salário mínimo R$ 1.621,00 | Teto R$ 8.475,55.</li>
+      <li><strong>Tabela progressiva do IRRF:</strong> Lei nº 15.191/2025 — vigente desde 05/2025.</li>
+      <li><strong>Redução do imposto (isenção até R$ 5.000):</strong> Lei nº 15.270/2025 — vigente desde 01/01/2026.</li>
+      <li><strong>Simples Nacional:</strong> LC nº 123/2006, Anexos I a V (redação da LC nº 155/2016).</li>
+      <li><strong>Lucro Presumido:</strong> Lei nº 9.249/1995 (arts. 15 e 20), Lei nº 9.430/1996 e
+          LC nº 224/2025 (acréscimo de 10% na presunção sobre a receita acima de R$ 1.250.000,00 por trimestre).</li>
+      <li><strong>Lucro Real:</strong> Lei nº 9.430/1996, Lei nº 10.637/2002 e Lei nº 10.833/2003.</li>
+      <li><strong>IBS/CBS:</strong> LC nº 214/2025 — em 2026 vigora a fase de teste (CBS 0,9% e IBS 0,1%),
+          compensável com PIS/COFINS, por isso não entra nos cálculos desta página.</li>
+    </ul>
+    <p id="versao-tabelas" class="versao"></p>
+  </section>
+
+</main>
+
+<footer class="rodape">
+  <div class="conteudo rodape-interno">
+    <div class="rodape-bloco">
+      <span class="rodape-nome" data-escritorio="nome">M Contabilidade</span>
+      <span data-escritorio="endereco">Rua da Palma, 295 — Sala 113, Santo Antônio, Recife-PE</span>
+    </div>
+    <div class="rodape-bloco">
+      <span><a href="tel:+558132243472" data-escritorio="telefoneFixo">(81) 3224-3472</a></span>
+      <span><a data-whatsapp href="#" target="_blank" rel="noopener"><span data-escritorio="telefoneCelular">(81) 9 8774-7434</span> — WhatsApp</a></span>
+    </div>
+    <div class="rodape-bloco rodape-aviso">
+      <span>As calculadoras desta página são ferramentas de estimativa, de uso público e gratuito.
+            Não substituem a análise de um contador sobre o caso concreto e não geram responsabilidade
+            profissional sobre decisões tomadas a partir dos resultados.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/tabelas.js"></script>
+<script src="js/calculo-ir.js"></script>
+<script src="js/calculo-enquadramento.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
