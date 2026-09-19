@@ -287,7 +287,62 @@ var TABELAS = {
   },
 
   /* ---------------------------------------------------------------------------
-     8) DADOS DO ESCRITÓRIO (usados no cabeçalho, rodapé e botões de contato)
+     8) ÍNDICES DE ATUALIZAÇÃO MONETÁRIA
+     FONTE ........ API pública do Banco Central — Sistema Gerenciador de Séries
+                    Temporais (SGS). Endereço:
+                    https://api.bcb.gov.br/dados/serie/bcdata.sgs.{codigo}/dados
+                    Aberta, sem cadastro e sem chave de acesso.
+     VIGENCIA ..... os valores vêm do próprio BCB a cada consulta, então NÃO
+                    existe tabela para atualizar aqui. É a grande diferença em
+                    relação às tabelas de IR e INSS acima.
+     CONFERIDO EM . 19/09/2026 (códigos das séries a confirmar — veja abaixo)
+
+     >>> A CONFIRMAR <<<
+     Os códigos das séries precisam da sua conferência. Abra o arquivo
+     teste-api-indices.html (ou o atalho 4-TESTAR-APIS-DE-INDICES.bat): ele
+     mostra os últimos valores que cada série devolve, para você comparar com
+     o índice que conhece. Se algum código estiver trocado, corrija aqui.
+
+     COMO CADA ÍNDICE ACUMULA
+       "composto" — o índice de cada mês incide sobre o valor já corrigido:
+                    fator = (1+i1) x (1+i2) x ... x (1+in)
+       "soma"     — as taxas mensais são somadas, sem capitalização. É a regra
+                    da SELIC para tributos federais (Lei nº 9.430/1996, art. 61,
+                    parágrafo 3º), somando-se ainda 1% no mês do pagamento.
+  --------------------------------------------------------------------------- */
+  indices: {
+    fonte: 'Banco Central — API pública do SGS (api.bcb.gov.br)',
+    urlBase: 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.',
+    codigosConferidos: false, // <<< marcar true depois de rodar o teste das APIs
+
+    lista: [
+      { chave: 'ipca', nome: 'IPCA', serie: 433, metodo: 'composto',
+        orgao: 'IBGE (divulgado no SGS do Banco Central)',
+        uso: 'Índice oficial da inflação. O mais usado em contratos e em correção de valores em geral.' },
+
+      { chave: 'inpc', nome: 'INPC', serie: 188, metodo: 'composto',
+        orgao: 'IBGE (divulgado no SGS do Banco Central)',
+        uso: 'Muito usado em reclamações trabalhistas e em reajustes salariais.' },
+
+      { chave: 'igpm', nome: 'IGP-M', serie: 189, metodo: 'composto',
+        orgao: 'FGV (divulgado no SGS do Banco Central)',
+        uso: 'O índice tradicional dos contratos de aluguel.' },
+
+      { chave: 'tr', nome: 'TR — Taxa Referencial', serie: 226, metodo: 'composto',
+        orgao: 'Banco Central',
+        uso: 'Correção do FGTS e de alguns contratos.' },
+
+      { chave: 'selic', nome: 'SELIC', serie: 4390, metodo: 'soma',
+        orgao: 'Banco Central',
+        uso: 'Juros de mora de tributos federais.',
+        observacao: 'Para tributos federais, somam-se as SELIC mensais e acrescenta-se 1% ' +
+                    'referente ao mês do pagamento (Lei nº 9.430/1996, art. 61, parágrafo 3º).',
+        acrescentaUmPorCento: true }
+    ]
+  },
+
+  /* ---------------------------------------------------------------------------
+     9) DADOS DO ESCRITÓRIO (usados no cabeçalho, rodapé e botões de contato)
   --------------------------------------------------------------------------- */
   escritorio: {
     nome: 'M Contabilidade',

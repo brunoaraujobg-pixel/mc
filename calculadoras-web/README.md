@@ -9,6 +9,9 @@ no final de cada cálculo.
   parcela a deduzir, redutor da Lei nº 15.270/2025 e salário líquido estimado.
 - **Aba 2 — Enquadramento Tributário:** comparativo estimado entre Simples
   Nacional, Lucro Presumido e Lucro Real.
+- **Aba 3 — Atualização Monetária:** corrige um valor do passado por IPCA, INPC,
+  IGP-M, TR ou SELIC, com juros de mora e multa. Os índices são buscados na hora
+  na API pública do Banco Central.
 
 Tudo roda no navegador do visitante. **Não tem banco de dados, não tem
 back-end, não guarda nenhum dado de ninguém.** É só HTML, CSS e JavaScript.
@@ -91,7 +94,8 @@ calculadoras-web/
 ├── rodar-testes.js                A mesma conferência, pelo terminal
 ├── conferir-tabelas.py            Confere as tabelas nos sites do gov.br
 ├── testar-conferidor.py           Testes do próprio conferidor acima
-└── testes-navegador.js            Abre a página num navegador e confere a tela
+├── testes-navegador.js            Abre a página num navegador e confere a tela
+└── teste-api-indices.html         Testa se as APIs de índices respondem aqui
 ```
 
 **A regra mais importante do projeto:** nenhum valor de tabela pode ser escrito
@@ -217,6 +221,47 @@ npm install playwright
 npx playwright install chromium
 node testes-navegador.js
 ```
+
+---
+
+## A aba 3 é diferente das outras duas
+
+As abas 1 e 2 usam **tabelas guardadas** em `js/tabelas.js`, que você atualiza à
+mão quando a lei muda. A aba 3 não tem tabela nenhuma: ela **busca os índices no
+Banco Central na hora do cálculo**.
+
+A vantagem é grande: IPCA, INPC, IGP-M, TR e SELIC mudam todo mês, e essa aba
+**nunca desatualiza** — não tem manutenção mensal.
+
+O que fica em `js/tabelas.js` é só o *código da série* de cada índice no sistema
+do Banco Central, e a regra de acumulação de cada um:
+
+| Índice | Série | Como acumula |
+|---|---|---|
+| IPCA | 433 | composto — cada mês incide sobre o valor já corrigido |
+| INPC | 188 | composto |
+| IGP-M | 189 | composto |
+| TR | 226 | composto |
+| SELIC | 4390 | **soma** das taxas + 1% do mês do pagamento (tributos federais) |
+
+A SELIC é a exceção: para tributos federais, a lei manda **somar** as taxas
+mensais, sem capitalizar, e acrescentar 1% referente ao mês do pagamento
+(Lei nº 9.430/1996, art. 61, § 3º). A página faz isso e deixa o 1% como uma
+opção que você pode desmarcar.
+
+### Os códigos das séries precisam da sua conferência
+
+Rode o `4-TESTAR-APIS-DE-INDICES.bat`: ele mostra os últimos valores que cada
+série devolve, para você comparar com o índice que conhece. Se algum código
+estiver trocado, corrija em `js/tabelas.js` e marque
+`codigosConferidos: true`.
+
+### Se o Banco Central não responder
+
+A página não quebra. Ela explica o que houve e abre um campo para você informar
+o **índice acumulado do período** à mão — o cálculo sai do mesmo jeito, e o
+resultado avisa que foi feito com o percentual informado, não com os índices
+oficiais buscados.
 
 ---
 

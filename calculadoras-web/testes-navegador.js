@@ -58,8 +58,18 @@ async function principal() {
   async function novaPagina(viewport) {
     const pagina = await navegador.newPage({ viewport });
     pagina.on('pageerror', e => problemas.push('erro de JS: ' + e.message));
-    pagina.on('console', m => { if (m.type() === 'error') problemas.push('console: ' + m.text()); });
-    pagina.on('requestfailed', r => problemas.push('nao carregou: ' + r.url().split('/').pop()));
+    pagina.on('console', function (m) {
+      if (m.type() !== 'error') return;
+      if (/ERR_FAILED|api\.bcb\.gov\.br/.test(m.text())) return; // idem: abortado de propósito
+      problemas.push('console: ' + m.text());
+    });
+    /* A chamada ao Banco Central é abortada de propósito num dos testes, para
+       conferir a mensagem de erro e o modo manual. Falha dela não é bug da página
+       — o que importa é a página tratar isso bem, e isso é testado logo abaixo. */
+    pagina.on('requestfailed', function (r) {
+      if (/api\.bcb\.gov\.br/.test(r.url())) return;
+      problemas.push('nao carregou: ' + r.url().split('/').pop());
+    });
     return pagina;
   }
 
@@ -178,6 +188,91 @@ async function principal() {
   await pagina.waitForTimeout(400);
   conferir('aba 2: acima de 4,8 mi o Simples aparece como nao permitido',
     (await pagina.textContent('#resultado-enq')).includes('Não permitido'), true);
+
+  // ======================= ABA 3 — ATUALIZAÇÃO MONETÁRIA =======================
+  // Duas situações: o Banco Central fora de alcance (cai no modo manual) e o
+  // Banco Central respondendo (resposta simulada, para o teste não depender de rede).
+
+  await pagina.click('[data-aba="painel-cor"]');
+  await pagina.waitForTimeout(300);
+  conferir('aba 3: abriu', await pagina.isVisible('#painel-cor'), true);
+  conferir('aba 3: a lista de indices veio do tabelas.js',
+    (await pagina.$$eval('#cor-indice option', ns => ns.length)), 5);
+  conferir('aba 3: mes final ja vem preenchido',
+    (await pagina.inputValue('#cor-fim')).length, 7);
+  conferir('aba 3: campo do acumulado comeca escondido',
+    await pagina.isVisible('#bloco-manual'), false);
+
+  await pagina.selectOption('#cor-indice', 'selic');
+  await pagina.waitForTimeout(200);
+  conferir('aba 3: SELIC oferece o 1% do mes do pagamento',
+    await pagina.isVisible('#bloco-selic1'), true);
+  await pagina.selectOption('#cor-indice', 'ipca');
+  await pagina.waitForTimeout(200);
+  conferir('aba 3: IPCA nao oferece o 1%', await pagina.isVisible('#bloco-selic1'), false);
+
+  await pagina.fill('#cor-valor', '1.500,00');
+  await pagina.fill('#cor-inicio', '2026-05');
+  await pagina.fill('#cor-fim', '2026-01');
+  await pagina.click('#form-cor button[type=submit]');
+  await pagina.waitForTimeout(250);
+  conferir('aba 3: recusa periodo invertido',
+    (await pagina.textContent('#resultado-cor')).includes('não pode ser anterior'), true);
+
+  // --- Banco Central respondendo (simulado): IPCA 0,5% + 0,3% + 0,2% ---
+  await pagina.route('**/api.bcb.gov.br/**', function (rota) {
+    rota.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([
+      { data: '01/01/2026', valor: '0.50' },
+      { data: '01/02/2026', valor: '0.30' },
+      { data: '01/03/2026', valor: '0.20' }
+    ]) });
+  });
+  await pagina.fill('#cor-inicio', '2026-01');
+  await pagina.fill('#cor-fim', '2026-03');
+  await pagina.fill('#cor-juros', '1');
+  await pagina.click('#form-cor button[type=submit]');
+  await pagina.waitForTimeout(700);
+
+  const cor = await pagina.$$eval('#resultado-cor .cartao .cartao-valor',
+    ns => ns.map(n => n.textContent.trim()));
+  conferir('aba 3: valor original na tela', cor[0], 'R$ 1.500,00');
+  conferir('aba 3: correcao de 1,0031% sobre 1.500,00', cor[1], '+ R$ 15,05');
+  conferir('aba 3: juros simples de 1% x 3 meses', cor[2], '+ R$ 45,45');
+  conferir('aba 3: valor atualizado', cor[3], 'R$ 1.560,50');
+
+  const textoCor = await pagina.textContent('#resultado-cor');
+  conferir('aba 3: mostra a tabela mes a mes', textoCor.includes('Índices usados, mês a mês'), true);
+  conferir('aba 3: cita a serie oficial usada', textoCor.includes('série 433'), true);
+
+  // --- pediu mais meses do que o BCB tem divulgado ---
+  await pagina.fill('#cor-fim', '2026-06');
+  await pagina.click('#form-cor button[type=submit]');
+  await pagina.waitForTimeout(600);
+  conferir('aba 3: avisa quando faltam meses divulgados',
+    (await pagina.textContent('#resultado-cor')).includes('só tem 3 divulgados'), true);
+
+  // --- Banco Central fora do ar: tem de cair no modo manual ---
+  await pagina.unroute('**/api.bcb.gov.br/**');
+  await pagina.route('**/api.bcb.gov.br/**', function (rota) { rota.abort('failed'); });
+  await pagina.fill('#cor-fim', '2026-03');
+  await pagina.click('#form-cor button[type=submit]');
+  await pagina.waitForTimeout(800);
+  conferir('aba 3: explica que nao falou com o Banco Central',
+    (await pagina.textContent('#resultado-cor')).includes('Não consegui falar com o Banco Central'), true);
+  conferir('aba 3: abre o campo do acumulado manual',
+    await pagina.isVisible('#bloco-manual'), true);
+
+  await pagina.fill('#cor-acumulado', '12,5');
+  await pagina.fill('#cor-juros', '0');
+  await pagina.click('#form-cor button[type=submit]');
+  await pagina.waitForTimeout(400);
+  const corManual = await pagina.$$eval('#resultado-cor .cartao .cartao-valor',
+    ns => ns.map(n => n.textContent.trim()));
+  conferir('aba 3 manual: 12,5% sobre 1.500,00 = 187,50', corManual[1], '+ R$ 187,50');
+  conferir('aba 3 manual: total', corManual[2], 'R$ 1.687,50');
+  conferir('aba 3 manual: avisa que usou o percentual informado',
+    (await pagina.textContent('#resultado-cor')).includes('que você informou'), true);
+  await pagina.unroute('**/api.bcb.gov.br/**');
 
   // ======================= CELULAR =======================
   const celular = await novaPagina({ width: 360, height: 780 });

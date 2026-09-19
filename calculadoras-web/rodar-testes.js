@@ -3,7 +3,7 @@ var fs = require('fs');
 var path = require('path');
 var vm = require('vm');
 
-['js/tabelas.js', 'js/calculo-ir.js', 'js/calculo-enquadramento.js', 'js/app.js', 'js/testes.js']
+['js/tabelas.js', 'js/calculo-ir.js', 'js/calculo-enquadramento.js', 'js/calculo-correcao.js', 'js/app.js', 'js/aba-correcao.js', 'js/testes.js']
   .forEach(function (arquivo) {
     vm.runInThisContext(fs.readFileSync(path.join(__dirname, arquivo), 'utf8'), { filename: arquivo });
   });

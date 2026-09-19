@@ -487,10 +487,18 @@ function preencherDadosDoEscritorio() {
    Isso permite reaproveitar as funções de cálculo em testes fora do navegador. */
 if (typeof document !== 'undefined' && document.addEventListener) {
   document.addEventListener('DOMContentLoaded', function () {
-    iniciarLogos();
-    iniciarAbas();
-    iniciarFormularioIR();
-    iniciarFormularioEnquadramento();
-    preencherDadosDoEscritorio();
+    /* Cada aba mora num arquivo. A página de conferência (testes.html) carrega
+       só os motores de cálculo, sem os arquivos de tela — por isso a chamada é
+       condicional. Se um arquivo de tela faltar no index.html, os testes de
+       navegador acusam, porque a aba deixa de funcionar. */
+    function ligar(nome) {
+      if (typeof window[nome] === 'function') window[nome]();
+    }
+    ligar('iniciarLogos');
+    ligar('iniciarAbas');
+    ligar('iniciarFormularioIR');
+    ligar('iniciarFormularioEnquadramento');
+    ligar('iniciarFormularioCorrecao');
+    ligar('preencherDadosDoEscritorio');
   });
 }

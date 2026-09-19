@@ -35,9 +35,9 @@
 
   <section class="chamada">
     <h1>Calculadoras gratuitas</h1>
-    <p>Duas ferramentas para você entender seus números antes de tomar decisão:
-       o imposto que sai do seu salário e o regime tributário que pode custar menos para a sua empresa.
-       Todo cálculo aparece <strong>passo a passo</strong>, para você conferir na mão.</p>
+    <p>Três ferramentas para você entender seus números antes de tomar decisão: o imposto que sai do
+       seu salário, o regime tributário que pode custar menos para a sua empresa, e quanto vale hoje um
+       valor do passado. Todo cálculo aparece <strong>passo a passo</strong>, para você conferir na mão.</p>
   </section>
 
   <div class="abas" role="tablist">
@@ -46,6 +46,9 @@
     </button>
     <button class="aba-botao" data-aba="painel-enq" role="tab" aria-selected="false">
       <span class="aba-num">2</span> Enquadramento Tributário — Empresa
+    </button>
+    <button class="aba-botao" data-aba="painel-cor" role="tab" aria-selected="false">
+      <span class="aba-num">3</span> Atualização Monetária de Valores
     </button>
   </div>
 
@@ -192,6 +195,98 @@
     <div id="resultado-enq" class="resultado"></div>
   </section>
 
+  <!-- ============================ ABA 3 ============================ -->
+  <section class="aba-painel" id="painel-cor" role="tabpanel">
+    <div class="cartao-painel">
+      <h2>Atualização Monetária de Valores</h2>
+      <p class="subtitulo">Corrige um valor do passado até hoje por <strong>IPCA, INPC, IGP-M, TR ou SELIC</strong>,
+         com juros de mora e multa se houver. Os índices vêm direto do
+         <strong>Banco Central</strong> na hora do cálculo — não é tabela guardada aqui.</p>
+
+      <form id="form-cor" novalidate>
+        <div class="campos">
+          <div class="campo">
+            <label for="cor-valor">Valor original <span class="obrigatorio">*</span></label>
+            <div class="entrada-prefixo">
+              <span>R$</span>
+              <input type="text" id="cor-valor" inputmode="decimal" placeholder="1.500,00" autocomplete="off">
+            </div>
+            <small>O valor na data em que era devido.</small>
+          </div>
+
+          <div class="campo">
+            <label for="cor-inicio">Mês inicial <span class="obrigatorio">*</span></label>
+            <input type="month" id="cor-inicio">
+            <small>Mês a partir do qual o valor deve ser corrigido.</small>
+          </div>
+
+          <div class="campo">
+            <label for="cor-fim">Mês final <span class="obrigatorio">*</span></label>
+            <input type="month" id="cor-fim">
+            <small>Vem preenchido com o último mês já divulgado.</small>
+          </div>
+
+          <div class="campo campo-largo">
+            <label for="cor-indice">Índice de correção</label>
+            <select id="cor-indice"></select>
+            <small id="cor-indice-uso"></small>
+          </div>
+
+          <div class="campo campo-largo" id="bloco-selic1" style="display:none">
+            <label class="opcao" style="max-width:560px">
+              <input type="checkbox" id="cor-selic1" checked>
+              Acrescentar 1% referente ao mês do pagamento (regra dos tributos federais)
+            </label>
+            <small>Lei nº 9.430/1996, art. 61, § 3º. Desmarque se estiver corrigindo um valor que não seja tributo federal.</small>
+          </div>
+
+          <div class="campo">
+            <label for="cor-juros">Juros de mora <span class="opcional">(opcional)</span></label>
+            <div class="entrada-sufixo">
+              <input type="text" id="cor-juros" inputmode="decimal" value="0">
+              <span>% ao mês</span>
+            </div>
+            <small>Deixe 0 se não houver juros. O contrato ou a lei dizem o percentual.</small>
+          </div>
+
+          <div class="campo">
+            <label>Tipo de juros</label>
+            <div class="opcoes">
+              <label class="opcao"><input type="radio" name="cor-tipo-juros" value="simples" checked> Simples</label>
+              <label class="opcao"><input type="radio" name="cor-tipo-juros" value="compostos"> Compostos</label>
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="cor-multa">Multa <span class="opcional">(opcional)</span></label>
+            <div class="entrada-sufixo">
+              <input type="text" id="cor-multa" inputmode="decimal" value="0">
+              <span>%</span>
+            </div>
+            <small>Sobre o valor já corrigido.</small>
+          </div>
+
+          <div class="campo campo-largo" id="bloco-manual" style="display:none">
+            <label for="cor-acumulado">Índice acumulado do período</label>
+            <div class="entrada-sufixo">
+              <input type="text" id="cor-acumulado" inputmode="decimal" placeholder="ex.: 12,5">
+              <span>%</span>
+            </div>
+            <small>Use este campo quando não der para buscar os índices automaticamente.
+                   Você pode pegar o percentual acumulado na Calculadora do Cidadão do Banco Central.</small>
+          </div>
+        </div>
+
+        <div class="acoes">
+          <button type="submit" class="botao botao-principal">Atualizar valor</button>
+          <button type="reset" class="botao botao-secundario">Limpar</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="resultado-cor" class="resultado"></div>
+  </section>
+
   <section class="fontes">
     <h3>Fontes das tabelas utilizadas</h3>
     <ul>
@@ -203,6 +298,9 @@
       <li><strong>Lucro Presumido:</strong> Lei nº 9.249/1995 (arts. 15 e 20), Lei nº 9.430/1996 e
           LC nº 224/2025 (acréscimo de 10% na presunção sobre a receita acima de R$ 1.250.000,00 por trimestre).</li>
       <li><strong>Lucro Real:</strong> Lei nº 9.430/1996, Lei nº 10.637/2002 e Lei nº 10.833/2003.</li>
+      <li><strong>Índices de correção (IPCA, INPC, IGP-M, TR, SELIC):</strong> consultados na hora,
+          na API pública do Banco Central (Sistema Gerenciador de Séries Temporais).
+          Não são tabelas guardadas nesta página.</li>
       <li><strong>IBS/CBS:</strong> LC nº 214/2025 — em 2026 vigora a fase de teste (CBS 0,9% e IBS 0,1%),
           compensável com PIS/COFINS, por isso não entra nos cálculos desta página.</li>
     </ul>
@@ -233,6 +331,8 @@
 <script src="js/tabelas.js"></script>
 <script src="js/calculo-ir.js"></script>
 <script src="js/calculo-enquadramento.js"></script>
+<script src="js/calculo-correcao.js"></script>
+<script src="js/aba-correcao.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

@@ -202,6 +202,89 @@ function rodarTestes() {
   conferir('Arredondamento — 1,005 deve virar 1,01', arred2(1.005), 1.01);
   conferir('Arredondamento — 2,675 deve virar 2,68', arred2(2.675), 2.68);
 
+  /* ============== ATUALIZAÇÃO MONETÁRIA ==============
+     Todas as contas abaixo foram feitas na mão a partir das taxas informadas.
+     Nada aqui depende de internet: as taxas entram prontas. */
+
+  // Fator composto: 1,005 x 1,005 = 1,010025
+  conferir('Correção — fator composto de duas taxas de 0,5%',
+    calcularFatorAcumulado([0.5, 0.5], 'composto'), 1.010025);
+
+  // Fator por soma (regra da SELIC): 1 + (1% + 1%) = 1,02
+  conferir('Correção — fator por soma de duas taxas de 1%',
+    calcularFatorAcumulado([1, 1], 'soma'), 1.02);
+
+  conferir('Correção — período sem nenhum mês devolve fator 1',
+    calcularFatorAcumulado([], 'composto'), 1);
+
+  // R$ 1.000,00 por IPCA de 0,5% + 0,3% + 0,2%
+  // fator = 1,005 x 1,003 x 1,002 = 1,01003103 -> R$ 1.010,03
+  var c1 = calcularAtualizacao({
+    valorOriginal: 1000, metodo: 'composto',
+    taxas: [{ data: '01/01/2026', valor: 0.5 }, { data: '01/02/2026', valor: 0.3 }, { data: '01/03/2026', valor: 0.2 }]
+  });
+  conferir('Correção — 1.000,00 por 3 meses de IPCA: valor corrigido', c1.valorCorrigido, 1010.03);
+  conferir('Correção — 1.000,00 por 3 meses de IPCA: só a correção', c1.correcao, 10.03);
+  conferir('Correção — 1.000,00 por 3 meses de IPCA: total sem juros', c1.total, 1010.03);
+  conferir('Correção — contou os 3 meses', c1.meses, 3);
+
+  // SELIC de tributos: soma 1%+1%+1% = 3%, mais 1% do mês do pagamento = 4%
+  var c2 = calcularAtualizacao({
+    valorOriginal: 1000, metodo: 'soma', acrescentar1: true,
+    taxas: [{ data: '01/01/2026', valor: 1 }, { data: '01/02/2026', valor: 1 }, { data: '01/03/2026', valor: 1 }]
+  });
+  conferir('Correção — SELIC somada + 1% do mês do pagamento', c2.valorCorrigido, 1040.00);
+
+  // Juros de mora simples: 1% ao mês por 3 meses sobre R$ 1.000,00 = R$ 30,00
+  var c3 = calcularAtualizacao({
+    valorOriginal: 1000, metodo: 'composto', jurosMensal: 1, jurosCompostos: false,
+    taxas: [{ data: '01/01/2026', valor: 0 }, { data: '01/02/2026', valor: 0 }, { data: '01/03/2026', valor: 0 }]
+  });
+  conferir('Correção — juros simples de 1% ao mês por 3 meses', c3.juros, 30.00);
+
+  // Juros compostos: 1.000 x ((1,01)^3 - 1) = R$ 30,30
+  var c4 = calcularAtualizacao({
+    valorOriginal: 1000, metodo: 'composto', jurosMensal: 1, jurosCompostos: true,
+    taxas: [{ data: '01/01/2026', valor: 0 }, { data: '01/02/2026', valor: 0 }, { data: '01/03/2026', valor: 0 }]
+  });
+  conferir('Correção — juros compostos de 1% ao mês por 3 meses', c4.juros, 30.30);
+
+  // Multa de 2% sobre R$ 1.000,00 = R$ 20,00
+  var c5 = calcularAtualizacao({
+    valorOriginal: 1000, metodo: 'composto', multaPercentual: 2,
+    taxas: [{ data: '01/01/2026', valor: 0 }]
+  });
+  conferir('Correção — multa de 2%', c5.multa, 20.00);
+  conferir('Correção — total com multa', c5.total, 1020.00);
+
+  // Caso completo com taxas de tamanho realista
+  // 1,0042 x 1,0056 x 1,0038 x 1,0012 = 1,01487724 -> 5.000 x isso = R$ 5.074,39
+  var c6 = calcularAtualizacao({
+    valorOriginal: 5000, metodo: 'composto',
+    taxas: [{ data: '01/01/2026', valor: 0.42 }, { data: '01/02/2026', valor: 0.56 },
+            { data: '01/03/2026', valor: 0.38 }, { data: '01/04/2026', valor: 0.12 }]
+  });
+  conferir('Correção — caso completo: 5.000,00 em 4 meses', c6.valorCorrigido, 5074.39);
+
+  // Taxa negativa (deflação) tem de reduzir o valor
+  var c7 = calcularAtualizacao({
+    valorOriginal: 1000, metodo: 'composto',
+    taxas: [{ data: '01/01/2026', valor: -0.5 }]
+  });
+  conferir('Correção — mês de deflação reduz o valor', c7.valorCorrigido, 995.00);
+
+  /* Contagem dos meses do período */
+  conferirTexto('Período 11/2024 a 02/2025 tem 4 meses',
+    String(listarMeses('2024-11', '2025-02').length), '4');
+  conferirTexto('Período de um mês só tem 1 mês',
+    String(listarMeses('2026-03', '2026-03').length), '1');
+  conferirTexto('Período virando o ano começa em 11/2024',
+    listarMeses('2024-11', '2025-02')[0].rotulo, '11/2024');
+  conferirTexto('Período virando o ano termina em 02/2025',
+    listarMeses('2024-11', '2025-02')[3].rotulo, '02/2025');
+  conferirTexto('Período invertido devolve lista vazia',
+    String(listarMeses('2026-05', '2026-01').length), '0');
+
   return testes;
 }
 
