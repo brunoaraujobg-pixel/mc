@@ -1,0 +1,982 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calculadora de Folha</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#EEF1EE; --surface:#FFFFFF; --surface-2:#F6F8F5; --line:#DBE0DA;
+  --ink:#18201E; --ink-2:#5B6A65; --ink-3:#84938E;
+  --accent:#0E6B57; --accent-soft:#E1EFEA; --debit:#A43C32; --warn:#8A6516; --warn-soft:#FAF2DE;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#101513; --surface:#171F1C; --surface-2:#1D2622; --line:#2A3531;
+    --ink:#E7EDEA; --ink-2:#9BA9A4; --ink-3:#77837E;
+    --accent:#52C4A4; --accent-soft:#16302A; --debit:#E28D80; --warn:#D6AB55; --warn-soft:#2A2415;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#101513; --surface:#171F1C; --surface-2:#1D2622; --line:#2A3531;
+  --ink:#E7EDEA; --ink-2:#9BA9A4; --ink-3:#77837E;
+  --accent:#52C4A4; --accent-soft:#16302A; --debit:#E28D80; --warn:#D6AB55; --warn-soft:#2A2415;
+}
+*{box-sizing:border-box}
+img{max-width:100%}
+[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  font-size:15px;line-height:1.45;-webkit-text-size-adjust:100%}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:22px 56px}
+h1{font-size:23px;font-weight:600;margin:0;letter-spacing:-.01em}
+h2{font-size:15px;font-weight:600;margin:0}
+p{margin:0}
+.top{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 14px;margin-bottom:4px}
+.sub{color:var(--ink-2);font-size:13.5px;margin-bottom:16px;max-width:70ch}
+.chip{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+  background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:4px 10px;white-space:nowrap}
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);
+  padding-block:8px;margin-bottom:16px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin}
+.tabs button{flex:0 0 auto;font:inherit;font-size:13.5px;font-weight:500;color:var(--ink-2);
+  background:transparent;border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer}
+.tabs button:hover{color:var(--ink);border-color:var(--ink-3)}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.cols{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+@media (min-width:920px){.cols{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);align-items:start}
+  .col-res{position:sticky;top:calc(env(safe-area-inset-top,0px) + 62px)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.card + .card{margin-top:14px}
+.bloco-tit{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 10px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:12px}
+.campo{display:grid;gap:5px;min-width:0}
+.campo label{font-size:12px;color:var(--ink-2);font-weight:500}
+.campo .hint{font-size:11px;color:var(--ink-3)}
+input[type=text],input[type=number],input[type=date],select{
+  font:inherit;font-size:14px;width:100%;padding:8px 10px;border:1px solid var(--line);
+  border-radius:8px;background:var(--surface-2);color:var(--ink);min-width:0}
+input[type=text],input[type=number]{font-family:'IBM Plex Mono',ui-monospace,monospace;text-align:right}
+input[type=date]{font-family:'IBM Plex Mono',ui-monospace,monospace}
+input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{
+  outline:2px solid var(--accent);outline-offset:2px}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;color:var(--ink-2);padding:2px 0}
+.check input{margin-top:3px;accent-color:var(--accent);flex:0 0 auto}
+.recibo{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.recibo th{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3);text-align:left;padding:0 8px 7px;border-bottom:1px solid var(--line)}
+.recibo th.n,.recibo td.n{text-align:right}
+.recibo td{padding:7px 8px;border-bottom:1px solid var(--line);font-size:13.5px;vertical-align:top}
+.recibo td.n{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.recibo td.ref{color:var(--ink-3);font-size:11.5px;font-family:'IBM Plex Mono',ui-monospace,monospace}
+.recibo .p{color:var(--accent)}
+.recibo .d{color:var(--debit)}
+.recibo tr.tot td{border-bottom:none;border-top:1.5px solid var(--ink-3);font-weight:600;padding-top:9px}
+.liq{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px;
+  margin-top:14px;padding:13px 14px;background:var(--accent-soft);border-radius:8px}
+.liq span{font-size:12px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+.liq strong{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:26px;font-weight:500;
+  color:var(--ink);font-variant-numeric:tabular-nums}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.tile b{display:block;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:16px;
+  font-weight:500;font-variant-numeric:tabular-nums}
+.tile span{font-size:11px;color:var(--ink-2);letter-spacing:.04em}
+.memo{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+.memo summary{cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--ink-2)}
+.memo ol{margin:10px 0 0;padding-left:20px;display:grid;gap:6px}
+.memo li{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:12px;color:var(--ink-2);
+  line-height:1.5;overflow-wrap:anywhere}
+.memo li b{color:var(--ink);font-weight:500}
+.acoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.btn{font:inherit;font-size:13px;font-weight:500;padding:7px 13px;border-radius:8px;cursor:pointer;
+  border:1px solid var(--line);background:var(--surface-2);color:var(--ink)}
+.btn:hover{border-color:var(--ink-3)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .btn.pri,:root:not([data-theme="light"]) .btn.pri{color:#0B1613}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .btn.pri{color:#fff}}
+.aviso{background:var(--warn-soft);border:1px solid color-mix(in srgb,var(--warn) 35%,transparent);
+  border-radius:8px;padding:11px 13px;font-size:12.5px;color:var(--ink-2);margin-top:14px}
+.aviso b{color:var(--ink)}
+.nota{font-size:12px;color:var(--ink-3);margin-top:10px}
+.fonte{font-size:12px;color:var(--ink-3);margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
+.fonte a{color:var(--ink-2)}
+.tag{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  border:1px solid var(--line);border-radius:4px;padding:1px 5px;color:var(--ink-3);margin-left:6px;white-space:nowrap}
+.linha-tab{display:grid;grid-template-columns:1fr 92px 92px;gap:8px;align-items:end;margin-bottom:8px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top">
+    <h1>Calculadora de Folha</h1>
+    <span class="chip" id="chip-vigencia">Tabelas 2026</span>
+  </div>
+  <p class="sub">Folha mensal, férias, 13º salário e rescisão com INSS, IRRF (com o redutor da Lei 15.270/2025), FGTS e memória de cálculo linha a linha. Tabelas editáveis na aba <b>Tabelas</b>.</p>
+
+  <nav class="tabs" role="tablist" aria-label="Módulos">
+    <button role="tab" id="tab-folha" aria-controls="p-folha" aria-selected="true">Folha mensal</button>
+    <button role="tab" id="tab-ferias" aria-controls="p-ferias" aria-selected="false">Férias</button>
+    <button role="tab" id="tab-decimo" aria-controls="p-decimo" aria-selected="false">13º salário</button>
+    <button role="tab" id="tab-rescisao" aria-controls="p-rescisao" aria-selected="false">Rescisão</button>
+    <button role="tab" id="tab-tabelas" aria-controls="p-tabelas" aria-selected="false">Tabelas</button>
+  </nav>
+
+  <!-- ================= FOLHA ================= -->
+  <section id="p-folha" role="tabpanel" aria-labelledby="tab-folha" class="cols">
+    <div>
+      <div class="card">
+        <p class="bloco-tit">Remuneração</p>
+        <div class="grid2">
+          <div class="campo"><label for="f_salario">Salário contratual</label><input type="text" id="f_salario" value="3.200,00"></div>
+          <div class="campo"><label for="f_horasmes">Horas mensais</label><input type="text" id="f_horasmes" value="220"></div>
+          <div class="campo"><label for="f_dep">Dependentes IRRF</label><input type="text" id="f_dep" value="1"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="bloco-tit">Variáveis do mês</p>
+        <div class="grid2">
+          <div class="campo"><label for="f_he1_h">Horas extras (h)</label><input type="text" id="f_he1_h" value="10"></div>
+          <div class="campo"><label for="f_he1_p">Adicional HE (%)</label><input type="text" id="f_he1_p" value="50"></div>
+          <div class="campo"><label for="f_he2_h">Horas extras 2 (h)</label><input type="text" id="f_he2_h" value="0"></div>
+          <div class="campo"><label for="f_he2_p">Adicional HE 2 (%)</label><input type="text" id="f_he2_p" value="100"></div>
+          <div class="campo"><label for="f_not_h">Horas noturnas (h)</label><input type="text" id="f_not_h" value="0"></div>
+          <div class="campo"><label for="f_not_p">Adicional noturno (%)</label><input type="text" id="f_not_p" value="20"></div>
+          <div class="campo"><label for="f_insal">Insalubridade (%)</label>
+            <select id="f_insal"><option value="0">Não há</option><option value="10">10% — grau mínimo</option><option value="20">20% — grau médio</option><option value="40">40% — grau máximo</option></select>
+            <span class="hint">Base: salário mínimo</span></div>
+          <div class="campo"><label for="f_outros_p">Outros proventos</label><input type="text" id="f_outros_p" value="0,00"></div>
+          <div class="campo"><label for="f_dias_uteis">Dias úteis no mês</label><input type="text" id="f_dias_uteis" value="25"></div>
+          <div class="campo"><label for="f_dsr_dias">Domingos e feriados</label><input type="text" id="f_dsr_dias" value="5"></div>
+        </div>
+        <div style="margin-top:10px">
+          <label class="check"><input type="checkbox" id="f_peric"> Periculosidade — 30% sobre o salário base</label>
+          <label class="check"><input type="checkbox" id="f_dsr" checked> Calcular DSR sobre horas extras e adicional noturno</label>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="bloco-tit">Descontos e faltas</p>
+        <div class="grid2">
+          <div class="campo"><label for="f_faltas">Faltas (dias)</label><input type="text" id="f_faltas" value="0"></div>
+          <div class="campo"><label for="f_faltas_dsr">DSR sobre faltas (dias)</label><input type="text" id="f_faltas_dsr" value="0"></div>
+          <div class="campo"><label for="f_vt">Custo do vale-transporte</label><input type="text" id="f_vt" value="0,00"><span class="hint">Desconto limitado a 6%</span></div>
+          <div class="campo"><label for="f_saude">Plano de saúde</label><input type="text" id="f_saude" value="0,00"></div>
+          <div class="campo"><label for="f_pensao">Pensão alimentícia</label><input type="text" id="f_pensao" value="0,00"><span class="hint">Deduz da base do IRRF</span></div>
+          <div class="campo"><label for="f_adiant">Adiantamento / vale</label><input type="text" id="f_adiant" value="0,00"></div>
+          <div class="campo"><label for="f_outros_d">Outros descontos</label><input type="text" id="f_outros_d" value="0,00"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="bloco-tit">Encargos do empregador</p>
+        <label class="check"><input type="checkbox" id="f_simples" checked> Empresa do Simples Nacional (anexos I a III) — sem CPP patronal e sem terceiros</label>
+        <div class="grid2" style="margin-top:10px">
+          <div class="campo"><label for="f_rat">RAT × FAP (%)</label><input type="text" id="f_rat" value="2"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-res"><div class="card" id="f_out"></div></div>
+  </section>
+
+  <!-- ================= FÉRIAS ================= -->
+  <section id="p-ferias" role="tabpanel" aria-labelledby="tab-ferias" class="cols" hidden>
+    <div>
+      <div class="card">
+        <p class="bloco-tit">Período de férias</p>
+        <div class="grid2">
+          <div class="campo"><label for="v_salario">Salário contratual</label><input type="text" id="v_salario" value="3.200,00"></div>
+          <div class="campo"><label for="v_medias">Média de variáveis</label><input type="text" id="v_medias" value="0,00"><span class="hint">HE, comissões, adicionais</span></div>
+          <div class="campo"><label for="v_dias">Dias de férias</label><input type="text" id="v_dias" value="30"></div>
+          <div class="campo"><label for="v_dep">Dependentes IRRF</label><input type="text" id="v_dep" value="1"></div>
+          <div class="campo"><label for="v_pensao">Pensão alimentícia</label><input type="text" id="v_pensao" value="0,00"></div>
+          <div class="campo"><label for="v_outros_d">Outros descontos</label><input type="text" id="v_outros_d" value="0,00"></div>
+        </div>
+        <div style="margin-top:10px">
+          <label class="check"><input type="checkbox" id="v_abono"> Vender 1/3 (abono pecuniário) — isento de INSS e IRRF</label>
+          <label class="check"><input type="checkbox" id="v_adiant13"> Adiantar a 1ª parcela do 13º (50%)</label>
+        </div>
+      </div>
+    </div>
+    <div class="col-res"><div class="card" id="v_out"></div></div>
+  </section>
+
+  <!-- ================= 13º ================= -->
+  <section id="p-decimo" role="tabpanel" aria-labelledby="tab-decimo" class="cols" hidden>
+    <div>
+      <div class="card">
+        <p class="bloco-tit">13º salário</p>
+        <div class="grid2">
+          <div class="campo"><label for="d_salario">Salário contratual</label><input type="text" id="d_salario" value="3.200,00"></div>
+          <div class="campo"><label for="d_medias">Média de variáveis</label><input type="text" id="d_medias" value="0,00"></div>
+          <div class="campo"><label for="d_avos">Avos (meses ≥ 15 dias)</label><input type="text" id="d_avos" value="12"></div>
+          <div class="campo"><label for="d_dep">Dependentes IRRF</label><input type="text" id="d_dep" value="1"></div>
+          <div class="campo"><label for="d_pensao">Pensão alimentícia</label><input type="text" id="d_pensao" value="0,00"></div>
+          <div class="campo"><label for="d_adiant">Adiantamento já pago</label><input type="text" id="d_adiant" value="0,00"><span class="hint">Deixe 0 para calcular 50%</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-res"><div class="card" id="d_out"></div></div>
+  </section>
+
+  <!-- ================= RESCISÃO ================= -->
+  <section id="p-rescisao" role="tabpanel" aria-labelledby="tab-rescisao" class="cols" hidden>
+    <div>
+      <div class="card">
+        <p class="bloco-tit">Contrato</p>
+        <div class="grid2">
+          <div class="campo"><label for="r_admissao">Admissão</label><input type="date" id="r_admissao" value="2021-03-15"></div>
+          <div class="campo"><label for="r_saida">Último dia trabalhado</label><input type="date" id="r_saida" value="2026-09-18"></div>
+          <div class="campo"><label for="r_salario">Salário contratual</label><input type="text" id="r_salario" value="3.200,00"></div>
+          <div class="campo"><label for="r_medias">Média de variáveis</label><input type="text" id="r_medias" value="0,00"></div>
+          <div class="campo"><label for="r_dep">Dependentes IRRF</label><input type="text" id="r_dep" value="1"></div>
+          <div class="campo"><label for="r_fgts">Saldo do FGTS na conta</label><input type="text" id="r_fgts" value="0,00"><span class="hint">Para a multa rescisória</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <p class="bloco-tit">Motivo e aviso prévio</p>
+        <div class="grid2">
+          <div class="campo"><label for="r_motivo">Motivo do desligamento</label>
+            <select id="r_motivo">
+              <option value="sjc">Dispensa sem justa causa</option>
+              <option value="pedido">Pedido de demissão</option>
+              <option value="acordo">Acordo — art. 484-A da CLT</option>
+              <option value="jc">Dispensa por justa causa</option>
+              <option value="experiencia">Término de contrato de experiência</option>
+            </select></div>
+          <div class="campo"><label for="r_aviso">Aviso prévio</label>
+            <select id="r_aviso">
+              <option value="indenizado">Indenizado</option>
+              <option value="trabalhado">Trabalhado</option>
+              <option value="dispensado">Dispensado / não devido</option>
+            </select></div>
+          <div class="campo"><label for="r_ferias_venc">Períodos de férias vencidas</label><input type="text" id="r_ferias_venc" value="0"><span class="hint" id="r_venc_hint">—</span></div>
+          <div class="campo"><label for="r_desc_outros">Outros descontos</label><input type="text" id="r_desc_outros" value="0,00"></div>
+        </div>
+        <p class="nota">Nas dispensas sem justa causa o aviso prévio indenizado projeta o contrato e gera avos adicionais de férias e 13º.</p>
+      </div>
+    </div>
+    <div class="col-res"><div class="card" id="r_out"></div></div>
+  </section>
+
+  <!-- ================= TABELAS ================= -->
+  <section id="p-tabelas" role="tabpanel" aria-labelledby="tab-tabelas" hidden>
+    <div class="cols">
+      <div>
+        <div class="card">
+          <p class="bloco-tit">Parâmetros gerais</p>
+          <div class="grid2">
+            <div class="campo"><label for="t_vigencia">Vigência</label><input type="text" id="t_vigencia" value="2026" style="text-align:left"></div>
+            <div class="campo"><label for="t_minimo">Salário mínimo</label><input type="text" id="t_minimo"></div>
+            <div class="campo"><label for="t_fgts">FGTS (%)</label><input type="text" id="t_fgts"></div>
+            <div class="campo"><label for="t_dep">Dedução por dependente</label><input type="text" id="t_dep"></div>
+            <div class="campo"><label for="t_simplificado">Desconto simplificado</label><input type="text" id="t_simplificado"></div>
+            <div class="campo"><label for="t_terceiros">Terceiros (%)</label><input type="text" id="t_terceiros"></div>
+          </div>
+        </div>
+        <div class="card">
+          <p class="bloco-tit">INSS — tabela progressiva</p>
+          <div id="t_inss"></div>
+          <p class="nota">Informe o limite superior de cada faixa e a alíquota. O cálculo é progressivo, faixa a faixa.</p>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <p class="bloco-tit">IRRF — tabela progressiva mensal</p>
+          <div id="t_irrf"></div>
+        </div>
+        <div class="card">
+          <p class="bloco-tit">Redutor do IRRF — Lei 15.270/2025</p>
+          <div class="grid2">
+            <div class="campo"><label for="t_red_isencao">Isenção total até</label><input type="text" id="t_red_isencao"></div>
+            <div class="campo"><label for="t_red_limite">Redução parcial até</label><input type="text" id="t_red_limite"></div>
+            <div class="campo"><label for="t_red_base">Parcela fixa</label><input type="text" id="t_red_base"></div>
+            <div class="campo"><label for="t_red_coef">Coeficiente</label><input type="text" id="t_red_coef"></div>
+          </div>
+          <p class="nota">Redutor = parcela fixa − (coeficiente × rendimento tributável), limitado ao imposto apurado.</p>
+          <div style="margin-top:8px">
+            <label class="check"><input type="checkbox" id="t_red_ativo" checked> Aplicar o redutor</label>
+            <label class="check"><input type="checkbox" id="t_red_13" checked> Aplicar também no 13º salário (apuração em separado)</label>
+          </div>
+        </div>
+        <div class="acoes">
+          <button class="btn pri" id="t_salvar">Salvar tabelas</button>
+          <button class="btn" id="t_restaurar">Restaurar padrão 2026</button>
+          <span id="t_status" class="nota" style="align-self:center;margin:0"></span>
+        </div>
+        <div class="aviso"><b>Confira a vigência antes de usar em produção.</b> As tabelas mudam por portaria interministerial (INSS) e por lei ou instrução normativa (IRRF). Os valores gravados aqui ficam salvos apenas neste navegador.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="fonte">
+    <b>Valores padrão carregados — vigência 2026:</b> salário mínimo R$ 1.621,00; teto do INSS R$ 8.475,55 (desconto máximo R$ 988,09); tabela do IRRF mantida desde maio/2025 (faixa isenta até R$ 2.428,80), dedução por dependente R$ 189,59, desconto simplificado R$ 607,20; redutor da Lei 15.270/2025 = R$ 978,62 − (0,133145 × rendimento), zerando o IRRF até R$ 5.000,00 e acabando em R$ 7.350,00.
+    <br><br>Ferramenta de conferência. Não substitui o cálculo do sistema de folha nem a análise do caso concreto — convenção coletiva, acordos, adicionais próprios e situações especiais (estabilidade, aposentadoria, afastamento) não estão contemplados.
+  </div>
+</div>
+
+<script>
+/* ========== tabelas padrão (vigência 2026) ========== */
+const PADRAO = {
+  vigencia: "2026",
+  minimo: 1621.00,
+  fgts: 8,
+  terceiros: 5.8,
+  dependente: 189.59,
+  simplificado: 607.20,
+  inss: [
+    {ate: 1621.00, aliq: 7.5},
+    {ate: 2902.84, aliq: 9},
+    {ate: 4354.27, aliq: 12},
+    {ate: 8475.55, aliq: 14}
+  ],
+  irrf: [
+    {ate: 2428.80, aliq: 0,    ded: 0},
+    {ate: 2826.65, aliq: 7.5,  ded: 182.16},
+    {ate: 3751.05, aliq: 15,   ded: 394.16},
+    {ate: 4664.68, aliq: 22.5, ded: 675.49},
+    {ate: 0,       aliq: 27.5, ded: 908.73}
+  ],
+  redutor: {isencao: 5000.00, limite: 7350.00, base: 978.62, coef: 0.133145, ativo: true, decimo: true}
+};
+let cfg = JSON.parse(JSON.stringify(PADRAO));
+
+/* ========== utilitários ========== */
+const nf = new Intl.NumberFormat('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+const nf4 = new Intl.NumberFormat('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:6});
+const brl = n => 'R$ ' + nf.format(r2(n || 0));
+const r2 = n => Math.round(((n || 0) + Number.EPSILON) * 100) / 100;
+const el = id => document.getElementById(id);
+
+function parseNum(v){
+  if (typeof v === 'number') return v;
+  if (!v) return 0;
+  let s = String(v).trim().replace(/[R$\s%]/g, '');
+  if (s.indexOf(',') > -1) s = s.replace(/\./g, '').replace(',', '.');
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+const num = id => parseNum(el(id).value);
+const chk = id => el(id).checked;
+function dia(id){
+  const v = el(id).value;
+  if (!v) return null;
+  const [a,m,d] = v.split('-').map(Number);
+  return new Date(a, m-1, d);
+}
+const ptBR = d => d ? d.toLocaleDateString('pt-BR') : '—';
+function addDias(d, n){ const x = new Date(d.getTime()); x.setDate(x.getDate() + n); return x; }
+function diasEntre(a, b){ return Math.floor((b - a) / 86400000) + 1; }
+
+/* avos: meses do período com 15 dias ou mais trabalhados */
+function avosPorMes(inicio, fim){
+  if (!inicio || !fim || fim < inicio) return 0;
+  let avos = 0, cur = new Date(inicio.getFullYear(), inicio.getMonth(), 1);
+  while (cur <= fim){
+    const mIni = new Date(cur.getFullYear(), cur.getMonth(), 1);
+    const mFim = new Date(cur.getFullYear(), cur.getMonth()+1, 0);
+    const ini = inicio > mIni ? inicio : mIni;
+    const f = fim < mFim ? fim : mFim;
+    if (diasEntre(ini, f) >= 15) avos++;
+    cur = new Date(cur.getFullYear(), cur.getMonth()+1, 1);
+  }
+  return Math.min(avos, 12);
+}
+function anosCompletos(adm, fim){
+  if (!adm || !fim) return 0;
+  let n = fim.getFullYear() - adm.getFullYear();
+  const aniv = new Date(fim.getFullYear(), adm.getMonth(), adm.getDate());
+  if (fim < aniv) n--;
+  return Math.max(0, n);
+}
+
+/* ========== INSS progressivo ========== */
+function calcINSS(base){
+  base = r2(base);
+  let anterior = 0, total = 0, detalhe = [];
+  for (const f of cfg.inss){
+    if (base > anterior){
+      const ate = Math.min(base, f.ate);
+      const parcela = r2(ate - anterior);
+      const valor = parcela * f.aliq / 100;
+      total += valor;
+      detalhe.push(nf.format(parcela) + ' × ' + nf4.format(f.aliq) + '% = ' + nf.format(r2(valor)));
+    }
+    anterior = f.ate;
+  }
+  const teto = cfg.inss[cfg.inss.length-1].ate;
+  return {
+    valor: r2(total),
+    base: Math.min(base, teto),
+    noTeto: base > teto,
+    memo: 'INSS sobre ' + brl(base) + (base > teto ? ' (limitado ao teto de ' + brl(teto) + ')' : '') +
+          ' → ' + detalhe.join(' + ') + ' → total <b>' + brl(total) + '</b>'
+  };
+}
+
+/* ========== IRRF ========== */
+function calcIRRF(rendimento, inss, dependentes, pensao, opts){
+  opts = opts || {};
+  rendimento = r2(rendimento);
+  const dedDep = r2(dependentes * cfg.dependente);
+  const legais = r2(inss + dedDep + pensao);
+  const usaSimplificado = cfg.simplificado > legais;
+  const deducao = usaSimplificado ? cfg.simplificado : legais;
+  const base = Math.max(0, r2(rendimento - deducao));
+  const faixa = cfg.irrf.find(f => f.ate <= 0 || base <= f.ate) || cfg.irrf[cfg.irrf.length-1];
+  const apurado = Math.max(0, r2(base * faixa.aliq / 100 - faixa.ded));
+
+  let redutor = 0, memoRed = null;
+  const aplicar = cfg.redutor.ativo && opts.redutor !== false;
+  if (aplicar && apurado > 0){
+    if (rendimento <= cfg.redutor.isencao){
+      redutor = apurado;
+      memoRed = 'Redutor da Lei 15.270/2025: rendimento de ' + brl(rendimento) + ' até ' + brl(cfg.redutor.isencao) + ' → imposto zerado (redutor de <b>' + brl(redutor) + '</b>)';
+    } else if (rendimento <= cfg.redutor.limite){
+      redutor = Math.min(apurado, Math.max(0, r2(cfg.redutor.base - cfg.redutor.coef * rendimento)));
+      memoRed = 'Redutor da Lei 15.270/2025: ' + nf.format(cfg.redutor.base) + ' − (' + nf4.format(cfg.redutor.coef) + ' × ' + nf.format(rendimento) + ') = <b>' + brl(redutor) + '</b>';
+    }
+  }
+  const valor = Math.max(0, r2(apurado - redutor));
+
+  const memo = [];
+  memo.push('Base do IRRF: ' + brl(rendimento) + ' − ' +
+    (usaSimplificado
+      ? 'desconto simplificado ' + brl(cfg.simplificado)
+      : 'INSS ' + brl(inss) + (dedDep ? ' − ' + dependentes + ' dependente(s) ' + brl(dedDep) : '') + (pensao ? ' − pensão ' + brl(pensao) : '')) +
+    ' = <b>' + brl(base) + '</b>' + (usaSimplificado ? ' <i>(simplificado é mais vantajoso)</i>' : ''));
+  memo.push('IRRF apurado: ' + brl(base) + ' × ' + nf4.format(faixa.aliq) + '% − ' + brl(faixa.ded) + ' = <b>' + brl(apurado) + '</b>');
+  if (memoRed) memo.push(memoRed);
+  memo.push('IRRF a recolher: <b>' + brl(valor) + '</b>');
+
+  return {valor, base, apurado, redutor, aliquota: faixa.aliq, simplificado: usaSimplificado, memo};
+}
+
+/* ========== recibo ========== */
+function recibo(alvo, dados){
+  const linhas = dados.linhas.filter(l => r2(l.p || 0) !== 0 || r2(l.d || 0) !== 0 || l.tag);
+  const somaP = r2(linhas.reduce((s,l) => s + (l.p || 0), 0));
+  const somaD = r2(linhas.reduce((s,l) => s + (l.d || 0), 0));
+  const liquido = r2(somaP - somaD);
+  let h = '<h2>' + dados.titulo + '</h2>';
+  if (dados.resumo) h += '<p class="nota" style="margin-top:6px">' + dados.resumo + '</p>';
+  h += '<table class="recibo" style="margin-top:14px"><thead><tr><th>Verba</th><th class="n">Provento</th><th class="n">Desconto</th></tr></thead><tbody>';
+  for (const l of linhas){
+    h += '<tr><td>' + l.nome + (l.tag ? '<span class="tag">' + l.tag + '</span>' : '') +
+         (l.ref ? '<div class="ref">' + l.ref + '</div>' : '') + '</td>' +
+         '<td class="n p">' + (l.p ? nf.format(r2(l.p)) : '') + '</td>' +
+         '<td class="n d">' + (l.d ? nf.format(r2(l.d)) : '') + '</td></tr>';
+  }
+  h += '<tr class="tot"><td>Totais</td><td class="n p">' + nf.format(somaP) + '</td><td class="n d">' + nf.format(somaD) + '</td></tr>';
+  h += '</tbody></table>';
+  h += '<div class="liq"><span>' + (dados.rotulo || 'Líquido a receber') + '</span><strong>' + brl(liquido) + '</strong></div>';
+  if (dados.tiles && dados.tiles.length){
+    h += '<div class="tiles">' + dados.tiles.map(t =>
+      '<div class="tile"><b>' + (t.texto || brl(t.valor)) + '</b><span>' + t.rotulo + '</span></div>').join('') + '</div>';
+  }
+  if (dados.avisos && dados.avisos.length){
+    h += dados.avisos.map(a => '<div class="aviso">' + a + '</div>').join('');
+  }
+  h += '<details class="memo" open><summary>Memória de cálculo</summary><ol>' +
+       dados.memo.map(m => '<li>' + m + '</li>').join('') + '</ol></details>';
+  h += '<div class="acoes"><button class="btn" data-copiar="1">Copiar memória</button><button class="btn" onclick="window.print()">Imprimir</button></div>';
+  alvo.innerHTML = h;
+  const btn = alvo.querySelector('[data-copiar]');
+  if (btn) btn.addEventListener('click', () => {
+    const txt = dados.titulo + '\n\n' +
+      linhas.map(l => '- ' + l.nome + (l.ref ? ' (' + l.ref + ')' : '') + ': ' +
+        (l.p ? 'provento ' + brl(l.p) : '') + (l.d ? 'desconto ' + brl(l.d) : '')).join('\n') +
+      '\n\nTotal de proventos: ' + brl(somaP) + '\nTotal de descontos: ' + brl(somaD) +
+      '\n' + (dados.rotulo || 'Líquido a receber') + ': ' + brl(liquido) +
+      '\n\nMemória de cálculo:\n' + dados.memo.map((m,i) => (i+1) + '. ' + m.replace(/<[^>]+>/g,'')).join('\n');
+    navigator.clipboard.writeText(txt).then(() => {
+      btn.textContent = 'Memória copiada';
+      setTimeout(() => btn.textContent = 'Copiar memória', 1800);
+    }).catch(() => btn.textContent = 'Não foi possível copiar');
+  });
+  return {somaP, somaD, liquido};
+}
+</script>
+
+<script>
+/* ================= FOLHA MENSAL ================= */
+function calcFolha(){
+  const salario = num('f_salario');
+  const horasMes = num('f_horasmes') || 220;
+  const vh = horasMes ? salario / horasMes : 0;
+  const memo = [], linhas = [];
+
+  linhas.push({nome:'Salário contratual', ref:'referência 30 dias', p: salario});
+  memo.push('Valor da hora normal: ' + brl(salario) + ' ÷ ' + nf4.format(horasMes) + 'h = <b>' + brl(vh) + '</b>');
+
+  let variaveis = 0;
+  [['f_he1_h','f_he1_p','Horas extras'], ['f_he2_h','f_he2_p','Horas extras 2']].forEach(([hid, pid, nome]) => {
+    const h = num(hid), p = num(pid);
+    if (h > 0){
+      const v = r2(vh * (1 + p/100) * h);
+      variaveis += v;
+      linhas.push({nome: nome + ' ' + nf4.format(p) + '%', ref: nf4.format(h) + 'h × ' + brl(vh * (1 + p/100)), p: v});
+      memo.push(nome + ': ' + nf4.format(h) + 'h × ' + brl(vh) + ' × ' + nf4.format(100 + p) + '% = <b>' + brl(v) + '</b>');
+    }
+  });
+  const notH = num('f_not_h'), notP = num('f_not_p');
+  if (notH > 0){
+    const v = r2(vh * notP/100 * notH);
+    variaveis += v;
+    linhas.push({nome:'Adicional noturno ' + nf4.format(notP) + '%', ref: nf4.format(notH) + 'h', p: v});
+    memo.push('Adicional noturno: ' + nf4.format(notH) + 'h × ' + brl(vh) + ' × ' + nf4.format(notP) + '% = <b>' + brl(v) + '</b>');
+  }
+  const insalP = num('f_insal');
+  let fixos = 0;
+  if (insalP > 0){
+    const v = r2(cfg.minimo * insalP/100);
+    fixos += v;
+    linhas.push({nome:'Insalubridade ' + nf4.format(insalP) + '%', ref:'sobre o mínimo ' + brl(cfg.minimo), p: v});
+    memo.push('Insalubridade: ' + brl(cfg.minimo) + ' × ' + nf4.format(insalP) + '% = <b>' + brl(v) + '</b>');
+  }
+  if (chk('f_peric')){
+    const v = r2(salario * 0.30);
+    fixos += v;
+    linhas.push({nome:'Periculosidade 30%', ref:'sobre o salário base', p: v});
+    memo.push('Periculosidade: ' + brl(salario) + ' × 30% = <b>' + brl(v) + '</b>');
+  }
+  let dsr = 0;
+  if (chk('f_dsr') && variaveis > 0){
+    const du = num('f_dias_uteis') || 25, dom = num('f_dsr_dias');
+    dsr = r2(variaveis / du * dom);
+    if (dsr){
+      linhas.push({nome:'DSR sobre variáveis', ref: nf4.format(du) + ' dias úteis / ' + nf4.format(dom) + ' descansos', p: dsr});
+      memo.push('DSR: ' + brl(variaveis) + ' ÷ ' + nf4.format(du) + ' × ' + nf4.format(dom) + ' = <b>' + brl(dsr) + '</b>');
+    }
+  }
+  const outrosP = num('f_outros_p');
+  if (outrosP) linhas.push({nome:'Outros proventos', p: outrosP});
+
+  const faltasDias = num('f_faltas'), faltasDsr = num('f_faltas_dsr');
+  const vDia = r2(salario / 30);
+  const descFaltas = r2(vDia * faltasDias), descFaltasDsr = r2(vDia * faltasDsr);
+  if (descFaltas) { linhas.push({nome:'Faltas', ref: nf4.format(faltasDias) + ' dia(s) × ' + brl(vDia), d: descFaltas});
+    memo.push('Faltas: ' + nf4.format(faltasDias) + ' × ' + brl(vDia) + ' = <b>' + brl(descFaltas) + '</b>'); }
+  if (descFaltasDsr) linhas.push({nome:'DSR sobre faltas', ref: nf4.format(faltasDsr) + ' dia(s) × ' + brl(vDia), d: descFaltasDsr});
+
+  const bruto = r2(salario + variaveis + fixos + dsr + outrosP - descFaltas - descFaltasDsr);
+  memo.push('Remuneração tributável: <b>' + brl(bruto) + '</b> (base do INSS, do IRRF e do FGTS)');
+
+  const inss = calcINSS(bruto);
+  memo.push(inss.memo);
+  linhas.push({nome:'INSS', ref:'tabela progressiva ' + cfg.vigencia, d: inss.valor});
+
+  const pensao = num('f_pensao');
+  const ir = calcIRRF(bruto, inss.valor, num('f_dep'), pensao);
+  ir.memo.forEach(m => memo.push(m));
+  if (ir.valor) linhas.push({nome:'IRRF', ref: nf4.format(ir.aliquota) + '% sobre ' + brl(ir.base), d: ir.valor});
+  else linhas.push({nome:'IRRF', ref:'sem imposto a reter', tag:'isento', d: 0});
+
+  const vtCusto = num('f_vt');
+  if (vtCusto > 0){
+    const limite = r2(salario * 0.06);
+    const v = Math.min(limite, vtCusto);
+    linhas.push({nome:'Vale-transporte', ref:'6% = ' + brl(limite) + ' / custo ' + brl(vtCusto), d: v});
+    memo.push('Vale-transporte: desconto limitado a 6% do salário (' + brl(limite) + '); custo ' + brl(vtCusto) + ' → <b>' + brl(v) + '</b>');
+  }
+  const saude = num('f_saude'), adiant = num('f_adiant'), outrosD = num('f_outros_d');
+  if (saude) linhas.push({nome:'Plano de saúde', d: saude});
+  if (pensao) linhas.push({nome:'Pensão alimentícia', d: pensao});
+  if (adiant) linhas.push({nome:'Adiantamento / vale', d: adiant});
+  if (outrosD) linhas.push({nome:'Outros descontos', d: outrosD});
+
+  const fgts = r2(bruto * cfg.fgts/100);
+  const simples = chk('f_simples');
+  const rat = num('f_rat');
+  const cpp = simples ? 0 : r2(bruto * 0.20);
+  const terc = simples ? 0 : r2(bruto * cfg.terceiros/100);
+  const ratV = simples ? 0 : r2(bruto * rat/100);
+  const custo = r2(bruto + fgts + cpp + terc + ratV);
+  memo.push('FGTS: ' + brl(bruto) + ' × ' + nf4.format(cfg.fgts) + '% = <b>' + brl(fgts) + '</b> (depósito do empregador, não desconta do empregado)');
+  memo.push(simples
+    ? 'Empresa do Simples (anexos I a III): CPP patronal e terceiros já estão no DAS. Custo = remuneração + FGTS = <b>' + brl(custo) + '</b>'
+    : 'Encargos patronais: CPP 20% ' + brl(cpp) + ' + RAT×FAP ' + nf4.format(rat) + '% ' + brl(ratV) + ' + terceiros ' + nf4.format(cfg.terceiros) + '% ' + brl(terc) + ' + FGTS ' + brl(fgts) + ' → custo total <b>' + brl(custo) + '</b>');
+
+  recibo(el('f_out'), {
+    titulo: 'Recibo de pagamento — folha mensal',
+    resumo: 'Remuneração tributável de ' + brl(bruto) + ' · tabelas de ' + cfg.vigencia,
+    linhas, memo,
+    tiles: [
+      {rotulo:'FGTS do mês (8%)', valor: fgts},
+      {rotulo: simples ? 'Custo total (Simples)' : 'Custo total do empregador', valor: custo},
+      {rotulo:'Base do INSS', valor: inss.base}
+    ]
+  });
+}
+
+/* ================= FÉRIAS ================= */
+function calcFerias(){
+  const salario = num('v_salario'), medias = num('v_medias');
+  const remun = r2(salario + medias);
+  const dias = Math.min(30, num('v_dias'));
+  const vDia = r2(remun / 30);
+  const memo = [], linhas = [];
+
+  const ferias = r2(vDia * dias);
+  const terco = r2(ferias / 3);
+  linhas.push({nome:'Férias', ref: nf4.format(dias) + ' dias × ' + brl(vDia), p: ferias});
+  linhas.push({nome:'1/3 constitucional', ref:'art. 7º, XVII, CF', p: terco});
+  memo.push('Remuneração de férias: (' + brl(salario) + ' + médias ' + brl(medias) + ') ÷ 30 × ' + nf4.format(dias) + ' dias = <b>' + brl(ferias) + '</b>');
+  memo.push('Terço constitucional: ' + brl(ferias) + ' ÷ 3 = <b>' + brl(terco) + '</b>');
+
+  let abono = 0, tercoAbono = 0, diasAbono = 0;
+  if (chk('v_abono')){
+    diasAbono = Math.floor(dias / 3);
+    abono = r2(vDia * diasAbono);
+    tercoAbono = r2(abono / 3);
+    linhas.push({nome:'Abono pecuniário', ref: nf4.format(diasAbono) + ' dias vendidos', tag:'isento', p: abono});
+    linhas.push({nome:'1/3 sobre o abono', tag:'isento', p: tercoAbono});
+    memo.push('Abono pecuniário (venda de 1/3): ' + nf4.format(diasAbono) + ' dias × ' + brl(vDia) + ' = ' + brl(abono) + ' + 1/3 de ' + brl(tercoAbono) + '. Não sofre INSS nem IRRF.');
+  }
+  let adiant13 = 0;
+  if (chk('v_adiant13')){
+    adiant13 = r2(remun / 2);
+    linhas.push({nome:'Adiantamento do 13º (50%)', ref:'1ª parcela', p: adiant13});
+    memo.push('1ª parcela do 13º paga nas férias: ' + brl(remun) + ' ÷ 2 = <b>' + brl(adiant13) + '</b> (sem descontos agora; tributa na 2ª parcela)');
+  }
+
+  const baseTrib = r2(ferias + terco);
+  const inss = calcINSS(baseTrib);
+  memo.push('Base do INSS: férias + 1/3 = ' + brl(baseTrib) + ' (abono e seu terço ficam de fora)');
+  memo.push(inss.memo);
+  linhas.push({nome:'INSS', ref:'sobre férias + 1/3', d: inss.valor});
+
+  const pensao = num('v_pensao');
+  const ir = calcIRRF(baseTrib, inss.valor, num('v_dep'), pensao);
+  ir.memo.forEach(m => memo.push(m));
+  if (ir.valor) linhas.push({nome:'IRRF', ref: nf4.format(ir.aliquota) + '% sobre ' + brl(ir.base), d: ir.valor});
+  else linhas.push({nome:'IRRF', ref:'sem imposto a reter', tag:'isento', d: 0});
+  if (pensao) linhas.push({nome:'Pensão alimentícia', d: pensao});
+  const outrosD = num('v_outros_d');
+  if (outrosD) linhas.push({nome:'Outros descontos', d: outrosD});
+
+  const fgts = r2(baseTrib * cfg.fgts/100);
+  memo.push('FGTS sobre férias + 1/3: <b>' + brl(fgts) + '</b>');
+
+  recibo(el('v_out'), {
+    titulo: 'Recibo de férias',
+    resumo: nf4.format(dias) + ' dias de gozo' + (diasAbono ? ' + ' + nf4.format(diasAbono) + ' dias de abono' : '') + ' · pagamento até 2 dias antes do início',
+    linhas, memo,
+    tiles: [{rotulo:'FGTS sobre as férias', valor: fgts}, {rotulo:'Base do INSS', valor: inss.base}]
+  });
+}
+
+/* ================= 13º SALÁRIO ================= */
+function calcDecimo(){
+  const salario = num('d_salario'), medias = num('d_medias');
+  const remun = r2(salario + medias);
+  const avos = Math.max(0, Math.min(12, num('d_avos')));
+  const bruto = r2(remun / 12 * avos);
+  const memo = [], linhas = [];
+
+  linhas.push({nome:'13º salário', ref: nf4.format(avos) + '/12 de ' + brl(remun), p: bruto});
+  memo.push('13º proporcional: ' + brl(remun) + ' ÷ 12 × ' + nf4.format(avos) + ' avos = <b>' + brl(bruto) + '</b>');
+
+  const inss = calcINSS(bruto);
+  memo.push('O 13º tem apuração própria de INSS e IRRF, separada do salário do mês.');
+  memo.push(inss.memo);
+  linhas.push({nome:'INSS sobre o 13º', ref:'apuração em separado', d: inss.valor});
+
+  const pensao = num('d_pensao');
+  const ir = calcIRRF(bruto, inss.valor, num('d_dep'), pensao, {redutor: cfg.redutor.decimo});
+  ir.memo.forEach(m => memo.push(m));
+  if (ir.valor) linhas.push({nome:'IRRF sobre o 13º', ref:'tributação exclusiva na fonte', d: ir.valor});
+  else linhas.push({nome:'IRRF sobre o 13º', ref:'sem imposto a reter', tag:'isento', d: 0});
+  if (pensao) linhas.push({nome:'Pensão alimentícia', d: pensao});
+
+  const adiantInformado = num('d_adiant');
+  const primeira = adiantInformado > 0 ? adiantInformado : r2(bruto / 2);
+  linhas.push({nome:'1ª parcela já paga', ref: adiantInformado > 0 ? 'valor informado' : '50% de ' + brl(bruto), d: primeira});
+  memo.push('1ª parcela (até 30/11): <b>' + brl(primeira) + '</b>, paga sem descontos. A 2ª parcela (até 20/12) absorve todo o INSS e o IRRF.');
+
+  const fgts = r2(bruto * cfg.fgts/100);
+  memo.push('FGTS sobre o 13º: <b>' + brl(fgts) + '</b>');
+
+  recibo(el('d_out'), {
+    titulo: 'Cálculo do 13º salário',
+    resumo: nf4.format(avos) + ' avos · 1ª parcela ' + brl(primeira),
+    rotulo: '2ª parcela a pagar',
+    linhas, memo,
+    tiles: [{rotulo:'13º bruto', valor: bruto}, {rotulo:'FGTS sobre o 13º', valor: fgts}, {rotulo:'1ª parcela', valor: primeira}]
+  });
+}
+</script>
+
+<script>
+/* ================= RESCISÃO ================= */
+const REGRAS = {
+  sjc:        {rot:'Dispensa sem justa causa', multa:40, prop:true,  saque:'Saque de 100% do FGTS + multa de 40%', seguro:'Dá direito ao seguro-desemprego'},
+  pedido:     {rot:'Pedido de demissão',       multa:0,  prop:true,  saque:'Sem saque do FGTS',                    seguro:'Sem seguro-desemprego'},
+  acordo:     {rot:'Acordo do art. 484-A',     multa:20, prop:true,  saque:'Saque de 80% do FGTS + multa de 20%',  seguro:'Sem seguro-desemprego'},
+  jc:         {rot:'Dispensa por justa causa', multa:0,  prop:false, saque:'Sem saque do FGTS',                    seguro:'Sem seguro-desemprego'},
+  experiencia:{rot:'Término do contrato de experiência', multa:0, prop:true, saque:'Saque do FGTS pelo término do contrato, sem multa de 40%', seguro:'Sem seguro-desemprego'}
+};
+
+function calcRescisao(){
+  const adm = dia('r_admissao'), saida = dia('r_saida');
+  const out = el('r_out');
+  if (!adm || !saida || saida < adm){
+    out.innerHTML = '<h2>Rescisão</h2><p class="nota" style="margin-top:8px">Informe a admissão e um último dia trabalhado posterior a ela.</p>';
+    return;
+  }
+  const salario = num('r_salario'), medias = num('r_medias');
+  const remun = r2(salario + medias), vDia = r2(remun / 30);
+  const motivo = el('r_motivo').value, avisoTipo = el('r_aviso').value;
+  const reg = REGRAS[motivo];
+  const anos = anosCompletos(adm, saida);
+  const diasAvisoLei = Math.min(90, 30 + 3 * anos);
+  const memo = [], linhas = [], avisos = [];
+
+  el('r_venc_hint').textContent = anos + ' ano(s) completo(s) de casa';
+
+  /* --- aviso prévio --- */
+  let avisoValor = 0, avisoDesconto = 0, diasAvisoAplic = 0, fimProj = saida;
+  if (motivo === 'sjc' || motivo === 'acordo'){
+    if (avisoTipo === 'indenizado'){
+      diasAvisoAplic = motivo === 'acordo' ? Math.round(diasAvisoLei / 2) : diasAvisoLei;
+      avisoValor = r2(vDia * diasAvisoAplic);
+      fimProj = addDias(saida, diasAvisoAplic);
+      memo.push('Aviso prévio indenizado: 30 dias + 3 por ano (' + anos + ' anos) = ' + diasAvisoLei + ' dias' +
+        (motivo === 'acordo' ? ', reduzido à metade no acordo = ' + diasAvisoAplic + ' dias' : '') +
+        ' × ' + brl(vDia) + ' = <b>' + brl(avisoValor) + '</b>. Projeta o contrato até ' + ptBR(fimProj) + '.');
+    } else if (avisoTipo === 'trabalhado'){
+      memo.push('Aviso prévio trabalhado (' + diasAvisoLei + ' dias): já remunerado no saldo de salário, sem verba própria e sem projeção.');
+    } else {
+      memo.push('Aviso prévio dispensado: sem pagamento e sem projeção do contrato.');
+    }
+  } else if (motivo === 'pedido' && avisoTipo === 'indenizado'){
+    diasAvisoAplic = 30;
+    avisoDesconto = r2(vDia * 30);
+    memo.push('Aviso prévio não cumprido pelo empregado: desconto de 30 dias × ' + brl(vDia) + ' = <b>' + brl(avisoDesconto) + '</b> (art. 487, §2º, CLT).');
+  } else if (motivo === 'pedido'){
+    memo.push(avisoTipo === 'trabalhado' ? 'Aviso prévio cumprido pelo empregado, remunerado no saldo de salário.' : 'Cumprimento do aviso dispensado pelo empregador, sem desconto.');
+  }
+
+  /* --- saldo de salário --- */
+  const diasSaldo = saida.getDate();
+  const saldo = r2(vDia * diasSaldo);
+  linhas.push({nome:'Saldo de salário', ref: diasSaldo + ' dia(s) × ' + brl(vDia), p: saldo});
+  memo.push('Saldo de salário: ' + diasSaldo + ' dias de ' + ptBR(saida) + ' × ' + brl(vDia) + ' = <b>' + brl(saldo) + '</b>');
+  if (avisoValor) linhas.push({nome:'Aviso prévio indenizado', ref: diasAvisoAplic + ' dias', tag:'isento', p: avisoValor});
+
+  /* --- 13º proporcional --- */
+  let decimo = 0;
+  if (reg.prop){
+    const iniAno = new Date(fimProj.getFullYear(), 0, 1);
+    const ini13 = adm > iniAno ? adm : iniAno;
+    const avos13 = avosPorMes(ini13, fimProj);
+    decimo = r2(remun / 12 * avos13);
+    linhas.push({nome:'13º salário proporcional', ref: avos13 + '/12 de ' + brl(remun), p: decimo});
+    memo.push('13º proporcional: ' + avos13 + ' avos (meses com 15 dias ou mais entre ' + ptBR(ini13) + ' e ' + ptBR(fimProj) + ') × ' + brl(r2(remun/12)) + ' = <b>' + brl(decimo) + '</b>');
+  } else {
+    memo.push('Justa causa: o 13º proporcional e as férias proporcionais não são devidos (art. 3º da Lei 4.090/62 e Súmula 171 do TST).');
+  }
+
+  /* --- férias proporcionais --- */
+  let feriasProp = 0, tercoProp = 0;
+  if (reg.prop){
+    const anosProj = anosCompletos(adm, fimProj);
+    const iniAquis = new Date(adm.getFullYear() + anosProj, adm.getMonth(), adm.getDate());
+    const avosF = avosPorMes(iniAquis, fimProj);
+    feriasProp = r2(remun / 12 * avosF);
+    tercoProp = r2(feriasProp / 3);
+    linhas.push({nome:'Férias proporcionais', ref: avosF + '/12 · período desde ' + ptBR(iniAquis), tag:'isento', p: feriasProp});
+    linhas.push({nome:'1/3 sobre férias proporcionais', tag:'isento', p: tercoProp});
+    memo.push('Férias proporcionais: ' + avosF + ' avos do período aquisitivo iniciado em ' + ptBR(iniAquis) + ' = ' + brl(feriasProp) + ' + 1/3 de ' + brl(tercoProp) + '. Indenizadas, sem INSS e sem IRRF (Súmula 386 do STJ).');
+  }
+
+  /* --- férias vencidas --- */
+  const periodosVenc = Math.max(0, num('r_ferias_venc'));
+  let feriasVenc = 0, tercoVenc = 0;
+  if (periodosVenc > 0){
+    feriasVenc = r2(remun * periodosVenc);
+    tercoVenc = r2(feriasVenc / 3);
+    linhas.push({nome:'Férias vencidas', ref: periodosVenc + ' período(s) × ' + brl(remun), tag:'isento', p: feriasVenc});
+    linhas.push({nome:'1/3 sobre férias vencidas', tag:'isento', p: tercoVenc});
+    memo.push('Férias vencidas: ' + periodosVenc + ' × ' + brl(remun) + ' = ' + brl(feriasVenc) + ' + 1/3 de ' + brl(tercoVenc) + '. Devidas em qualquer motivo, inclusive justa causa.');
+  }
+
+  /* --- INSS e IRRF --- */
+  const inssSaldo = calcINSS(saldo);
+  memo.push('INSS sobre o saldo de salário — aviso indenizado e férias indenizadas não integram o salário de contribuição.');
+  memo.push(inssSaldo.memo);
+  linhas.push({nome:'INSS sobre o saldo', ref:'tabela ' + cfg.vigencia, d: inssSaldo.valor});
+
+  const dep = num('r_dep');
+  const irSaldo = calcIRRF(saldo, inssSaldo.valor, dep, 0);
+  irSaldo.memo.forEach(m => memo.push(m));
+  if (irSaldo.valor) linhas.push({nome:'IRRF sobre o saldo', ref: nf4.format(irSaldo.aliquota) + '%', d: irSaldo.valor});
+  else linhas.push({nome:'IRRF sobre o saldo', ref:'sem imposto a reter', tag:'isento', d: 0});
+
+  let inss13 = {valor:0, base:0}, ir13 = {valor:0};
+  if (decimo > 0){
+    inss13 = calcINSS(decimo);
+    memo.push('INSS do 13º (apuração em separado): ' + inss13.memo.replace('INSS sobre ', ''));
+    linhas.push({nome:'INSS sobre o 13º', ref:'apuração em separado', d: inss13.valor});
+    ir13 = calcIRRF(decimo, inss13.valor, dep, 0, {redutor: cfg.redutor.decimo});
+    ir13.memo.forEach(m => memo.push('13º — ' + m));
+    if (ir13.valor) linhas.push({nome:'IRRF sobre o 13º', ref:'exclusivo na fonte', d: ir13.valor});
+    else linhas.push({nome:'IRRF sobre o 13º', ref:'sem imposto a reter', tag:'isento', d: 0});
+  }
+  if (avisoDesconto) linhas.push({nome:'Aviso prévio não cumprido', ref:'30 dias', d: avisoDesconto});
+  const outrosD = num('r_desc_outros');
+  if (outrosD) linhas.push({nome:'Outros descontos', d: outrosD});
+
+  /* --- FGTS --- */
+  const baseFgts = r2(saldo + decimo + avisoValor);
+  const fgtsRescisao = r2(baseFgts * cfg.fgts/100);
+  const saldoConta = num('r_fgts');
+  const baseMulta = r2(saldoConta + fgtsRescisao);
+  const multa = r2(baseMulta * reg.multa / 100);
+  memo.push('FGTS da rescisão: ' + nf4.format(cfg.fgts) + '% sobre saldo de salário + 13º + aviso indenizado (' + brl(baseFgts) + ') = <b>' + brl(fgtsRescisao) + '</b>. As férias indenizadas não têm FGTS.');
+  memo.push(reg.multa
+    ? 'Multa rescisória: ' + reg.multa + '% sobre ' + brl(baseMulta) + ' (saldo da conta informado + FGTS da rescisão) = <b>' + brl(multa) + '</b>. É depositada na conta vinculada — não entra no líquido do TRCT.'
+    : 'Sem multa rescisória do FGTS neste motivo.');
+
+  avisos.push('<b>' + reg.rot + ':</b> ' + reg.saque + '. ' + reg.seguro + '. Prazo de pagamento: 10 dias corridos a partir do término do contrato (art. 477, §6º, da CLT).');
+  if (motivo === 'experiencia') avisos.push('Término <b>antecipado</b> do contrato de experiência tem regra própria (arts. 479 e 480 da CLT) e não está contemplado aqui.');
+  if (fimProj > saida) avisos.push('Contrato projetado pelo aviso indenizado até <b>' + ptBR(fimProj) + '</b> — os avos de férias e 13º já consideram essa projeção.');
+
+  recibo(out, {
+    titulo: 'Rescisão — ' + reg.rot,
+    resumo: 'Admissão ' + ptBR(adm) + ' · saída ' + ptBR(saida) + ' · ' + anos + ' ano(s) de casa · remuneração ' + brl(remun),
+    rotulo: 'Líquido do TRCT',
+    linhas, memo, avisos,
+    tiles: [
+      {rotulo:'FGTS da rescisão', valor: fgtsRescisao},
+      {rotulo:'Multa de ' + reg.multa + '%', valor: multa},
+      {rotulo:'Aviso prévio', texto: diasAvisoAplic ? diasAvisoAplic + ' dias' : '—'}
+    ]
+  });
+}
+
+/* ================= TABELAS ================= */
+function montarTabelas(){
+  el('t_vigencia').value = cfg.vigencia;
+  el('t_minimo').value = nf.format(cfg.minimo);
+  el('t_fgts').value = nf4.format(cfg.fgts);
+  el('t_dep').value = nf.format(cfg.dependente);
+  el('t_simplificado').value = nf.format(cfg.simplificado);
+  el('t_terceiros').value = nf4.format(cfg.terceiros);
+  el('t_red_isencao').value = nf.format(cfg.redutor.isencao);
+  el('t_red_limite').value = nf.format(cfg.redutor.limite);
+  el('t_red_base').value = nf.format(cfg.redutor.base);
+  el('t_red_coef').value = nf4.format(cfg.redutor.coef);
+  el('t_red_ativo').checked = cfg.redutor.ativo;
+  el('t_red_13').checked = cfg.redutor.decimo;
+
+  el('t_inss').innerHTML = cfg.inss.map((f, i) =>
+    '<div class="linha-tab"><div class="campo"><label for="ti_ate' + i + '">Faixa ' + (i+1) + ' — até</label>' +
+    '<input type="text" id="ti_ate' + i + '" value="' + nf.format(f.ate) + '"></div>' +
+    '<div class="campo"><label for="ti_al' + i + '">Alíquota %</label><input type="text" id="ti_al' + i + '" value="' + nf4.format(f.aliq) + '"></div><div></div></div>').join('');
+
+  el('t_irrf').innerHTML = cfg.irrf.map((f, i) =>
+    '<div class="linha-tab"><div class="campo"><label for="tr_ate' + i + '">' + (f.ate <= 0 ? 'Última faixa — acima' : 'Faixa ' + (i+1) + ' — até') + '</label>' +
+    '<input type="text" id="tr_ate' + i + '" value="' + (f.ate <= 0 ? '' : nf.format(f.ate)) + '"' + (f.ate <= 0 ? ' disabled placeholder="—"' : '') + '></div>' +
+    '<div class="campo"><label for="tr_al' + i + '">Alíquota %</label><input type="text" id="tr_al' + i + '" value="' + nf4.format(f.aliq) + '"></div>' +
+    '<div class="campo"><label for="tr_de' + i + '">Deduzir</label><input type="text" id="tr_de' + i + '" value="' + nf.format(f.ded) + '"></div></div>').join('');
+}
+
+function lerTabelas(){
+  cfg.vigencia = el('t_vigencia').value.trim() || cfg.vigencia;
+  cfg.minimo = num('t_minimo');
+  cfg.fgts = num('t_fgts');
+  cfg.dependente = num('t_dep');
+  cfg.simplificado = num('t_simplificado');
+  cfg.terceiros = num('t_terceiros');
+  cfg.redutor = {
+    isencao: num('t_red_isencao'), limite: num('t_red_limite'),
+    base: num('t_red_base'), coef: num('t_red_coef'),
+    ativo: chk('t_red_ativo'), decimo: chk('t_red_13')
+  };
+  cfg.inss = cfg.inss.map((f, i) => ({ate: num('ti_ate' + i), aliq: num('ti_al' + i)}));
+  cfg.irrf = cfg.irrf.map((f, i) => ({
+    ate: f.ate <= 0 ? 0 : num('tr_ate' + i),
+    aliq: num('tr_al' + i), ded: num('tr_de' + i)
+  }));
+}
+
+function salvarCfg(){
+  try { localStorage.setItem('calc-folha-cfg', JSON.stringify(cfg)); return true; }
+  catch (e) { return false; }
+}
+function carregarCfg(){
+  try {
+    const s = localStorage.getItem('calc-folha-cfg');
+    if (s){
+      const o = JSON.parse(s);
+      if (o && o.inss && o.irrf && o.redutor) cfg = Object.assign({}, PADRAO, o);
+    }
+  } catch (e) { /* segue com o padrão */ }
+}
+
+/* ================= navegação e eventos ================= */
+const ABAS = [
+  ['tab-folha', 'p-folha'], ['tab-ferias', 'p-ferias'], ['tab-decimo', 'p-decimo'],
+  ['tab-rescisao', 'p-rescisao'], ['tab-tabelas', 'p-tabelas']
+];
+function abrir(id){
+  ABAS.forEach(([t, p]) => {
+    const ativo = t === id;
+    el(t).setAttribute('aria-selected', ativo ? 'true' : 'false');
+    el(p).hidden = !ativo;
+  });
+  try { localStorage.setItem('calc-folha-aba', id); } catch (e) {}
+}
+function recalcular(){
+  try { calcFolha(); calcFerias(); calcDecimo(); calcRescisao(); }
+  catch (e) { console.error(e); }
+  el('chip-vigencia').textContent = 'Tabelas ' + cfg.vigencia;
+}
+
+carregarCfg();
+montarTabelas();
+ABAS.forEach(([t]) => el(t).addEventListener('click', () => abrir(t)));
+try {
+  const salva = localStorage.getItem('calc-folha-aba');
+  if (salva && ABAS.some(([t]) => t === salva)) abrir(salva);
+} catch (e) {}
+
+document.addEventListener('input', e => {
+  if (e.target.closest('#p-tabelas')) { lerTabelas(); montarTabelasSeNecessario(e.target); }
+  recalcular();
+});
+document.addEventListener('change', e => {
+  if (e.target.closest('#p-tabelas')) lerTabelas();
+  recalcular();
+});
+function montarTabelasSeNecessario(){ /* os campos já estão montados; nada a refazer */ }
+
+el('t_salvar').addEventListener('click', () => {
+  lerTabelas();
+  el('t_status').textContent = salvarCfg()
+    ? 'Tabelas salvas neste navegador.'
+    : 'Não foi possível salvar neste navegador; os valores valem só nesta sessão.';
+  recalcular();
+  setTimeout(() => el('t_status').textContent = '', 3500);
+});
+el('t_restaurar').addEventListener('click', () => {
+  cfg = JSON.parse(JSON.stringify(PADRAO));
+  try { localStorage.removeItem('calc-folha-cfg'); } catch (e) {}
+  montarTabelas();
+  recalcular();
+  el('t_status').textContent = 'Padrão de 2026 restaurado.';
+  setTimeout(() => el('t_status').textContent = '', 3500);
+});
+
+recalcular();
+</script>
+
+</body>
+</html>
