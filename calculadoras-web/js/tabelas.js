@@ -208,6 +208,13 @@ var TABELAS = {
       servico:   { irpj: 0.32, csll: 0.32 }
     },
 
+    // Teto de receita bruta para optar pelo Lucro Presumido.
+    // FONTE: Lei nº 9.718/1998, art. 13 — R$ 78.000.000,00 no ano-calendário
+    // anterior (ou R$ 6.500.000,00 por mês de atividade, quando for menor).
+    // Acima disso o Lucro Real é OBRIGATÓRIO, não é escolha.
+    limiteAnual: 78000000.00,
+    limiteMensal: 6500000.00,
+
     irpjAliquota: 0.15,
     irpjAdicionalAliquota: 0.10,
     irpjAdicionalLimiteTrimestral: 60000.00, // R$ 20.000,00 por mês
@@ -322,7 +329,23 @@ var TABELAS = {
 
       { chave: 'inpc', nome: 'INPC', serie: 188, metodo: 'composto',
         orgao: 'IBGE (divulgado no SGS do Banco Central)',
-        uso: 'Muito usado em reclamações trabalhistas e em reajustes salariais.' },
+        uso: 'Reajustes salariais e dissídios. NÃO é o índice das condenações trabalhistas — para isso, veja o IPCA-E.' },
+
+      /* O IPCA-E entrou porque o texto do INPC estava induzindo a erro: o STF
+         definiu IPCA-E na fase pré-judicial e SELIC a partir do ajuizamento
+         da ação (e a EC nº 113/2021 manda usar SELIC nas causas contra a
+         Fazenda Pública). O INPC serve a reajuste salarial, não a condenação.
+
+         >>> ESTE É O CÓDIGO DE SÉRIE QUE EU TENHO MENOS CERTEZA <<<
+         Levantei 10764 para o IPCA-E, mas encontrei também a série 7478 como
+         IPCA-15 (que é o índice de onde o IPCA-E é acumulado). Rode o
+         4-TESTAR-APIS-DE-INDICES.bat: ele mostra os valores das duas e você
+         diz qual é a certa. */
+      { chave: 'ipcae', nome: 'IPCA-E', serie: 10764, metodo: 'composto',
+        orgao: 'IBGE (divulgado no SGS do Banco Central)',
+        uso: 'Condenações trabalhistas na fase pré-judicial. A partir do ajuizamento, aplica-se a SELIC (STF).',
+        observacao: 'Código de série ainda não conferido — confira antes de usar em cálculo de processo.',
+        codigoAConferir: true },
 
       { chave: 'igpm', nome: 'IGP-M', serie: 189, metodo: 'composto',
         orgao: 'FGV (divulgado no SGS do Banco Central)',

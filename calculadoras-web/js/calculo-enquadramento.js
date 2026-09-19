@@ -155,6 +155,21 @@ function simularSimplesNacional(entrada) {
 function simularLucroPresumido(entrada) {
   var cfg = TABELAS.lucroPresumido;
   var receitaAnual = entrada.faturamentoAnual;
+
+  /* Acima do teto do art. 13 da Lei nº 9.718/1998 a empresa NÃO pode optar
+     pelo Lucro Presumido — o Lucro Real passa a ser obrigatório. Sem esta
+     checagem a página calculava o Presumido normalmente e chegava a apontá-lo
+     como "menor carga" num regime que é vedado. */
+  if (receitaAnual > cfg.limiteAnual) {
+    return {
+      regime: 'Lucro Presumido',
+      permitido: false,
+      motivo: 'Faturamento acima do teto do Lucro Presumido (' + formatarMoeda(cfg.limiteAnual) +
+              ' por ano — Lei nº 9.718/1998, art. 13). Nesse caso o Lucro Real é obrigatório.',
+      total: null
+    };
+  }
+
   var receitaTrim = receitaAnual / 4;
 
   var chaveAtividade = (entrada.atividade === 'servico') ? 'servico' : entrada.atividade;
@@ -277,10 +292,17 @@ function simularLucroReal(entrada) {
 
   var total = arred2(irpjAno + csllAno + pisAno + cofinsAno + cppAno + issAno + icmsAno);
 
-  var avisos = [
+  var avisos = [];
+  if (receitaAnual > TABELAS.lucroPresumido.limiteAnual) {
+    avisos.push('Com esse faturamento o Lucro Real é OBRIGATÓRIO, não é escolha: acima de ' +
+      formatarMoeda(TABELAS.lucroPresumido.limiteAnual) + ' por ano o Lucro Presumido é vedado ' +
+      '(Lei nº 9.718/1998, art. 13). Há outras situações que também obrigam o Lucro Real — ' +
+      'bancos, lucros no exterior e alguns benefícios fiscais, entre outras.');
+  }
+  avisos = avisos.concat([
     'O Lucro Real é o regime mais sensível aos números reais da empresa. O resultado acima muda completamente conforme a margem de lucro efetiva e o volume de créditos de PIS/COFINS. Se a empresa tiver prejuízo, não há IRPJ nem CSLL a pagar.',
     'Se a margem informada estiver errada, o resultado do Lucro Real estará errado. Esta é a maior limitação desta simulação.'
-  ];
+  ]);
   if (entrada.atividade !== 'servico' && icmsAno === 0) {
     avisos.push('ICMS não incluído (percentual informado igual a zero) — o comparativo com o Simples fica incompleto.');
   }

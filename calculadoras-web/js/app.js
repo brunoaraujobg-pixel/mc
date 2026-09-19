@@ -234,10 +234,29 @@ function iniciarFormularioIR() {
       return;
     }
 
+    /* Um erro de digitação (vírgula no lugar errado) fazia a página mostrar
+       líquido negativo, ou líquido maior que o bruto, com a mesma cara de
+       resultado válido. Agora ela recusa e explica. */
+    var inssDigitado = parseNumeroBR(document.getElementById('ir-inss').value);
+    if (inssDigitado !== null) {
+      if (inssDigitado < 0) {
+        saida.innerHTML = '<div class="aviso aviso-erro">O INSS descontado não pode ser negativo.</div>';
+        saida.classList.add('visivel');
+        return;
+      }
+      if (inssDigitado > salario) {
+        saida.innerHTML = '<div class="aviso aviso-erro">O INSS informado (' +
+          formatarMoeda(inssDigitado) + ') é maior que o salário bruto (' + formatarMoeda(salario) +
+          '). Confira os dois valores — provavelmente há uma vírgula fora do lugar.</div>';
+        saida.classList.add('visivel');
+        return;
+      }
+    }
+
     var resultado = calcularIRRF({
       salarioBruto: salario,
       dependentes: document.getElementById('ir-dependentes').value,
-      inssInformado: parseNumeroBR(document.getElementById('ir-inss').value)
+      inssInformado: inssDigitado
     });
 
     saida.innerHTML = renderizarResultadoIR(resultado);

@@ -285,6 +285,58 @@ function rodarTestes() {
   conferirTexto('Período invertido devolve lista vazia',
     String(listarMeses('2026-05', '2026-01').length), '0');
 
+  /* ====== CORREÇÕES DA ANÁLISE TÉCNICO-CONTÁBIL (grupo 1) ====== */
+
+  // (c) INSS informado fora da faixa: antes gerava líquido negativo
+  var v1 = calcularIRRF({ salarioBruto: 3000, dependentes: 0, inssInformado: 5000 });
+  conferir('Validação — INSS maior que o bruto é limitado ao bruto', v1.inss.valor, 3000);
+  conferir('Validação — e o líquido não fica negativo', v1.salarioLiquido, 0);
+
+  var v2 = calcularIRRF({ salarioBruto: 3000, dependentes: 0, inssInformado: -500 });
+  conferir('Validação — INSS negativo vira zero', v2.inss.valor, 0);
+  conferir('Validação — e o líquido não passa do bruto', v2.salarioLiquido, 3000);
+
+  var v3 = calcularIRRF({ salarioBruto: 3000, dependentes: 0, inssInformado: 250 });
+  conferir('Validação — INSS válido passa sem mudança', v3.inss.valor, 250);
+  conferirTexto('Validação — INSS válido não é marcado como fora da faixa',
+    String(v3.inss.foraDaFaixa), 'false');
+
+  // (b) teto do Lucro Presumido — Lei nº 9.718/1998, art. 13
+  var entradaGrande = { atividade: 'servico', tipoServico: 'fatorR', folhaAnual: 1000000,
+                        issAliquota: 0.05, icmsEfetivo: 0, margemLucro: 0.10, creditosPisCofins: 0.10 };
+  function comFaturamento(v) {
+    var e = {}; for (var k in entradaGrande) e[k] = entradaGrande[k];
+    e.faturamentoAnual = v; return e;
+  }
+  conferirTexto('Teto do Presumido — 100 milhões é barrado',
+    String(simularLucroPresumido(comFaturamento(100000000)).permitido), 'false');
+  conferirTexto('Teto do Presumido — exatamente 78 milhões ainda é permitido',
+    String(simularLucroPresumido(comFaturamento(78000000)).permitido), 'true');
+  conferirTexto('Teto do Presumido — um real acima já é barrado',
+    String(simularLucroPresumido(comFaturamento(78000001)).permitido), 'false');
+  conferirTexto('Teto do Presumido — acima do teto, a menor carga não pode ser o Presumido',
+    String(simularEnquadramento(comFaturamento(100000000)).menorCarga), 'Lucro Real');
+
+  var lrGrande = simularLucroReal(comFaturamento(100000000));
+  conferirTexto('Teto do Presumido — o Lucro Real avisa que é obrigatório',
+    String(lrGrande.avisos[0].indexOf('OBRIGATÓRIO') > -1), 'true');
+
+  // (a) IPCA-E acrescentado e INPC com o texto corrigido
+  var chaves = TABELAS.indices.lista.map(function (i) { return i.chave; });
+  conferirTexto('Índices — IPCA-E está na lista', String(chaves.indexOf('ipcae') > -1), 'true');
+  conferirTexto('Índices — o texto do INPC não fala mais em reclamação trabalhista',
+    String(/reclama/i.test(indicePorChaveNosTestes('inpc').uso)), 'false');
+  conferirTexto('Índices — o IPCA-E aponta a fase pré-judicial',
+    String(/pré-judicial/i.test(indicePorChaveNosTestes('ipcae').uso)), 'true');
+  conferirTexto('Índices — o IPCA-E está marcado como código a conferir',
+    String(indicePorChaveNosTestes('ipcae').codigoAConferir), 'true');
+
+  function indicePorChaveNosTestes(chave) {
+    var l = TABELAS.indices.lista;
+    for (var i = 0; i < l.length; i++) if (l[i].chave === chave) return l[i];
+    return {};
+  }
+
   return testes;
 }
 

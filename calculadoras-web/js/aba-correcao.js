@@ -23,6 +23,18 @@ function atualizarAjudaDoIndice() {
   var cfg = indicePorChave(document.getElementById('cor-indice').value);
   document.getElementById('cor-indice-uso').textContent = cfg.orgao + ' — ' + cfg.uso;
   document.getElementById('bloco-selic1').style.display = cfg.acrescentaUmPorCento ? '' : 'none';
+
+  /* Alguns índices entraram com o código de série ainda não conferido na fonte.
+     Em vez de esconder isso, a página avisa quem vai usar. */
+  var alerta = document.getElementById('cor-aviso-serie');
+  if (cfg.codigoAConferir) {
+    alerta.innerHTML = '<strong>Índice ainda não conferido.</strong> O código da série do ' +
+      cfg.nome + ' no Banco Central ainda não foi validado na fonte. ' +
+      'Use como referência, mas <strong>não use em cálculo de processo</strong> sem conferir.';
+    alerta.style.display = '';
+  } else {
+    alerta.style.display = 'none';
+  }
 }
 
 function erroCorrecao(saida, mensagem) {

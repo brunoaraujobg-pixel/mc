@@ -127,6 +127,15 @@ async function principal() {
   conferir('aba 1: mostra o botao de WhatsApp no fim do calculo',
     await pagina.isVisible('#resultado-ir .botao-whats'), true);
 
+  // --- INSS digitado errado tem de ser recusado, não gerar líquido negativo ---
+  await pagina.fill('#ir-salario', '3.000,00');
+  await pagina.fill('#ir-inss', '5.000,00');
+  await pagina.click('#form-ir button[type=submit]');
+  await pagina.waitForTimeout(300);
+  conferir('aba 1: recusa INSS maior que o salario bruto',
+    (await pagina.textContent('#resultado-ir')).includes('maior que o salário bruto'), true);
+  await pagina.fill('#ir-inss', '');
+
   // --- isenção: 3.036,00 (dois salários mínimos) tem de dar IRRF zero ---
   await pagina.fill('#ir-salario', '3036');
   await pagina.fill('#ir-dependentes', '0');
@@ -197,7 +206,7 @@ async function principal() {
   await pagina.waitForTimeout(300);
   conferir('aba 3: abriu', await pagina.isVisible('#painel-cor'), true);
   conferir('aba 3: a lista de indices veio do tabelas.js',
-    (await pagina.$$eval('#cor-indice option', ns => ns.length)), 5);
+    (await pagina.$$eval('#cor-indice option', ns => ns.length)), 6);
   conferir('aba 3: mes final ja vem preenchido',
     (await pagina.inputValue('#cor-fim')).length, 7);
   conferir('aba 3: campo do acumulado comeca escondido',
@@ -210,6 +219,16 @@ async function principal() {
   await pagina.selectOption('#cor-indice', 'ipca');
   await pagina.waitForTimeout(200);
   conferir('aba 3: IPCA nao oferece o 1%', await pagina.isVisible('#bloco-selic1'), false);
+
+  // índice com código de série ainda não conferido tem de avisar na tela
+  await pagina.selectOption('#cor-indice', 'ipcae');
+  await pagina.waitForTimeout(200);
+  conferir('aba 3: IPCA-E avisa que a serie nao foi conferida',
+    await pagina.isVisible('#cor-aviso-serie'), true);
+  await pagina.selectOption('#cor-indice', 'ipca');
+  await pagina.waitForTimeout(200);
+  conferir('aba 3: IPCA nao mostra esse aviso',
+    await pagina.isVisible('#cor-aviso-serie'), false);
 
   await pagina.fill('#cor-valor', '1.500,00');
   await pagina.fill('#cor-inicio', '2026-05');

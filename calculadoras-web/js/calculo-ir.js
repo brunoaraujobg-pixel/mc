@@ -146,7 +146,20 @@ function calcularIRRF(entrada) {
     entrada.inssInformado !== '' &&
     !isNaN(Number(entrada.inssInformado));
 
-  var inssValor = inssInformadoValido ? arred2(Number(entrada.inssInformado)) : inssCalculado.valor;
+  /* O INSS informado pelo usuário é limitado ao intervalo que faz sentido:
+     não pode ser negativo (geraria líquido maior que o bruto) nem maior que o
+     próprio salário (geraria líquido negativo). A tela recusa esses valores
+     com uma mensagem clara; esta trava é a rede de segurança para quem chamar
+     a função direto. */
+  var inssValor;
+  var inssForaDaFaixa = false;
+  if (inssInformadoValido) {
+    var bruto0 = Number(entrada.inssInformado);
+    inssValor = arred2(Math.min(Math.max(bruto0, 0), salarioBruto));
+    inssForaDaFaixa = (arred2(bruto0) !== inssValor);
+  } else {
+    inssValor = inssCalculado.valor;
+  }
   var inssOrigem = inssInformadoValido ? 'informado' : 'calculado';
 
   // --- Caminho A: deduções legais -----------------------------------------
@@ -177,6 +190,7 @@ function calcularIRRF(entrada) {
     inss: {
       valor: inssValor,
       origem: inssOrigem,
+      foraDaFaixa: inssForaDaFaixa,
       detalhe: inssCalculado
     },
 
