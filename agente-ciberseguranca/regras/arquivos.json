@@ -1,0 +1,103 @@
+{
+  "versao": "1.0",
+  "descricao": "Arquivos que nao deveriam estar dentro de um projeto/repositorio.",
+  "regras": [
+    {
+      "id": "ARQ001",
+      "nome": "Certificado digital com chave privada dentro do projeto",
+      "severidade": "CRITICO",
+      "cwe": "CWE-312",
+      "padroes": [
+        "*.pfx",
+        "*.p12",
+        "*.jks",
+        "*.key",
+        "*.ppk",
+        "id_rsa",
+        "id_ed25519"
+      ],
+      "recomendacao": "Tire o certificado do projeto. Guarde em pasta propria fora do repositorio, com acesso restrito (ex: C:\\certificados), e aponte o caminho por variavel de ambiente. Se ja foi enviado ao GitHub, considere o certificado comprometido e emita outro."
+    },
+    {
+      "id": "ARQ002",
+      "nome": "Arquivo de variaveis de ambiente (.env) no projeto",
+      "severidade": "ALTO",
+      "cwe": "CWE-312",
+      "padroes": [
+        ".env",
+        ".env.*",
+        "!.env.exemplo",
+        "!.env.example"
+      ],
+      "recomendacao": "Mantenha .env fora do Git (listado no .gitignore) e versione apenas um .env.exemplo sem valores reais."
+    },
+    {
+      "id": "ARQ003",
+      "nome": "Arquivo com aparencia de lista de senhas",
+      "severidade": "CRITICO",
+      "cwe": "CWE-312",
+      "padroes": [
+        "*senha*.txt",
+        "*senha*.xlsx",
+        "*senhas*",
+        "*credenciais*",
+        "*password*.txt",
+        "*logins*.xlsx"
+      ],
+      "recomendacao": "Planilha de senhas e o alvo numero um de um invasor. Migre para um gerenciador de senhas (Bitwarden/KeePass) com senha mestra e 2 fatores."
+    },
+    {
+      "id": "ARQ004",
+      "nome": "Backup ou dump de banco de dados no projeto",
+      "severidade": "ALTO",
+      "cwe": "CWE-312",
+      "padroes": [
+        "*.bak",
+        "*.sql",
+        "*.dump",
+        "*.mdb",
+        "*.accdb",
+        "*.bkp"
+      ],
+      "recomendacao": "Backup contem dados de clientes. Guarde em local proprio, criptografado, fora do repositorio."
+    },
+    {
+      "id": "ARQ005",
+      "nome": "Banco de dados local com dados reais",
+      "severidade": "MEDIO",
+      "cwe": "CWE-312",
+      "padroes": [
+        "*.db",
+        "*.sqlite",
+        "*.sqlite3"
+      ],
+      "recomendacao": "Confirme que nao ha dado real de cliente. Adicione ao .gitignore e mantenha um banco vazio de exemplo para desenvolvimento."
+    },
+    {
+      "id": "ARQ006",
+      "nome": "Documento fiscal ou de cliente dentro do projeto",
+      "severidade": "MEDIO",
+      "cwe": "CWE-359",
+      "padroes": [
+        "*-nfe.xml",
+        "*procNFe*.xml",
+        "*NFe*.xml",
+        "*.cte.xml",
+        "*folha*.pdf",
+        "*rescisao*.pdf",
+        "*holerite*"
+      ],
+      "recomendacao": "Dados de terceiros (LGPD) nao devem ficar no codigo. Use uma pasta de dados fora do repositorio e, para teste, arquivos anonimizados."
+    },
+    {
+      "id": "ARQ007",
+      "nome": "Log de execucao versionado (pode conter dado sensivel)",
+      "severidade": "BAIXO",
+      "cwe": "CWE-532",
+      "padroes": [
+        "*.log"
+      ],
+      "recomendacao": "Adicione *.log ao .gitignore e revise o que e gravado: log nao deve conter senha, token nem CPF completo."
+    }
+  ]
+}
