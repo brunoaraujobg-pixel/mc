@@ -19,10 +19,29 @@ back-end, não guarda nenhum dado de ninguém.** É só HTML, CSS e JavaScript.
 
 As tabelas foram levantadas em **19/09/2026** cruzando várias publicações que
 reproduzem as normas oficiais. **O ambiente onde esta página foi gerada não
-conseguiu abrir os sites gov.br diretamente** (bloqueio de rede do ambiente),
-então a conferência final na fonte oficial ainda não foi feita.
+conseguiu abrir os sites gov.br** (bloqueio de rede do ambiente), então a
+conferência final na fonte oficial ainda não foi feita.
 
-**Antes de colocar a página no ar, confira estes 5 pontos:**
+**Da sua rede os sites do governo abrem normalmente.** Por isso existe um
+script que faz essa conferência automaticamente:
+
+> **Dê dois cliques em `3-CONFERIR-TABELAS-NO-GOV.bat`.**
+
+Ele abre os sites oficiais, procura cada número que está em `js/tabelas.js` e
+mostra um relatório assim:
+
+```
+   [OK]    Limite da faixa isenta                   2.428,80
+   [OK]    Parcela a deduzir — 27,5%                908,73
+   [FALHA] Dedução mensal por dependente            189,59   (nao achei na pagina oficial)
+```
+
+A conferência é feita nas **duas pontas**: o número precisa estar em
+`js/tabelas.js` **e** aparecer na página oficial. Se as duas baterem, está
+certo. Se der `[FALHA]`, o script diz exatamente qual número conferir na mão.
+
+Precisa do Python instalado. Se não tiver, o próprio `.bat` explica como
+instalar. Sem Python, dá para conferir na mão pela lista abaixo:
 
 | # | O que conferir | Onde conferir |
 |---|---|---|
@@ -47,17 +66,30 @@ Se algum número estiver diferente do que está aqui, **corrija em
 
 ```
 calculadoras-web/
-├── index.html                    A página que o visitante vê (as duas abas)
-├── testes.html                   Página interna de conferência dos cálculos
-├── rodar-testes.js               Roda a mesma conferência pelo terminal
+│
+│   ATALHOS (dois cliques, no Windows)
+├── 1-ABRIR-CALCULADORA.bat        Abre a calculadora no navegador
+├── 2-CONFERIR-CALCULOS.bat        Confere as contas (deve dar 47/47)
+├── 3-CONFERIR-TABELAS-NO-GOV.bat  Confere as tabelas nos sites do governo
+│
+│   PÁGINA
+├── index.html                     A página que o visitante vê (as duas abas)
 ├── css/
-│   └── estilo.css                Todo o visual (tema escuro, marca, celular)
+│   └── estilo.css                 Todo o visual (tema escuro, marca, celular)
+├── img/
+│   ├── logo.svg                   LOGO PROVISÓRIO — troque pelo real
+│   └── LEIA-ME.txt                Como colocar o logo do escritório
 └── js/
-    ├── tabelas.js                >>> TODAS AS TABELAS OFICIAIS FICAM AQUI <<<
-    ├── calculo-ir.js             Cálculo do INSS e do IRRF
-    ├── calculo-enquadramento.js  Simples, Lucro Presumido e Lucro Real
-    ├── app.js                    Liga a tela aos cálculos e monta os resultados
-    └── testes.js                 Os casos de teste com os valores conferidos na mão
+    ├── tabelas.js                 >>> TODAS AS TABELAS OFICIAIS FICAM AQUI <<<
+    ├── calculo-ir.js              Cálculo do INSS e do IRRF
+    ├── calculo-enquadramento.js   Simples, Lucro Presumido e Lucro Real
+    ├── app.js                     Liga a tela aos cálculos e monta os resultados
+    └── testes.js                  Os casos de teste com os valores conferidos na mão
+│
+│   USO INTERNO (não precisa subir para a hospedagem)
+├── testes.html                    Página de conferência dos cálculos
+├── rodar-testes.js                A mesma conferência, pelo terminal
+└── conferir-tabelas.py            O script que confere as tabelas no gov.br
 ```
 
 **A regra mais importante do projeto:** nenhum valor de tabela pode ser escrito
@@ -70,21 +102,32 @@ vigência** e a **data da última conferência**.
 
 ---
 
-## Como testar no seu computador (Windows)
+## Como rodar na sua máquina (Windows)
 
-Não precisa instalar nada. Não precisa de Python, não precisa de servidor.
+Não precisa instalar nada para usar a calculadora. Não precisa de servidor,
+não precisa de internet.
 
 1. Baixe a pasta `calculadoras-web` para o seu computador
    (por exemplo, `C:\Sites\calculadoras-web`).
 2. Abra a pasta no Explorador de Arquivos.
-3. **Dê dois cliques em `index.html`.** A página abre no seu navegador.
-4. Teste a Aba 1 com um salário que você já conhece o contracheque e confira
+3. **Dê dois cliques em `1-ABRIR-CALCULADORA.bat`.**
+   A página abre no seu navegador padrão.
+
+   (Se preferir, dá no mesmo dar dois cliques direto em `index.html`.)
+
+4. Teste a Aba 1 com um salário de que você já tem o contracheque e confira
    linha por linha na "Memória de cálculo".
-5. Teste a Aba 2 com uma empresa que você já conhece os números.
+5. Teste a Aba 2 com uma empresa cujos números você já conhece.
 
-### Conferindo os cálculos automaticamente
+### Os três atalhos, na ordem de uso
 
-Dê **dois cliques em `testes.html`**. A página abre e mostra, no topo:
+| Arquivo | O que faz | Quando usar |
+|---|---|---|
+| `1-ABRIR-CALCULADORA.bat` | Abre a página no navegador | Sempre que quiser usar ou mostrar a calculadora |
+| `2-CONFERIR-CALCULOS.bat` | Confere as contas contra valores feitos na mão | Depois de qualquer alteração em `js/tabelas.js` |
+| `3-CONFERIR-TABELAS-NO-GOV.bat` | Confere as tabelas nos sites oficiais | Antes de publicar, e a cada mudança de legislação |
+
+O atalho 2 abre uma página que precisa mostrar, no topo:
 
 ```
 47 testes | 47 passaram | 0 falharam.
@@ -93,9 +136,48 @@ Dê **dois cliques em `testes.html`**. A página abre e mostra, no topo:
 Se aparecer alguma falha em vermelho, **não publique a página** — algum número
 de `js/tabelas.js` está divergindo dos valores conferidos manualmente.
 
-> Se você tiver o Node.js instalado, dá para rodar o mesmo teste pelo terminal:
-> abra o Prompt de Comando na pasta do projeto e digite `node rodar-testes.js`.
-> É opcional — a página `testes.html` faz exatamente a mesma coisa.
+> Se você tiver o Node.js instalado, dá para rodar o mesmo teste pelo terminal
+> com `node rodar-testes.js`. É opcional — o atalho 2 faz a mesma coisa.
+
+---
+
+## Como colocar o logo do escritório
+
+O logo que aparece na página hoje é **provisório**. Ele está na pasta `img`, em
+duas versões do mesmo desenho: `logo.png` (a que a página usa) e `logo.svg`.
+
+Para trocar pelo logo de verdade, **não precisa editar código nenhum**:
+
+> Apague o `img/logo.png` provisório, coloque o logo do escritório no lugar
+> com esse mesmo nome, e atualize a página no navegador (tecla **F5**).
+
+Se o seu logo for em vetor (`.svg`), salve como `img/logo.svg` e **apague o
+`img/logo.png`** — senão o provisório continua ganhando.
+
+A página procura os arquivos nesta ordem:
+
+1. `img/logo.png` — se existir, usa este;
+2. `img/logo.svg` — se não achar o `.png`, usa este;
+3. desenho embutido — se não achar nenhum dos dois, desenha um "MC" simples.
+
+Ou seja, **a página nunca fica sem logo** e você nunca precisa mexer no HTML.
+
+### Cuidados com o arquivo do logo
+
+- **Fundo transparente.** O site é escuro; logo com fundo branco fica com um
+  retângulo branco em volta.
+- **Altura de pelo menos 200 pixels**, senão fica borrado em celular e em tela
+  de alta resolução.
+- **Versão para fundo escuro.** Se o logo do escritório for escuro, peça ao
+  designer a versão clara — quase todo logo tem as duas.
+- **Formato deitado** (mais largo que alto) encaixa melhor no cabeçalho.
+- Se você tiver o logo em vetor (`.ai`, `.eps`, `.svg`), peça o `.svg` ao
+  designer e salve como `img/logo.svg` — fica perfeito em qualquer tamanho.
+
+O detalhamento completo está em `img/LEIA-ME.txt`.
+
+O ícone que aparece na aba do navegador (favicon) é um desenho separado, dentro
+do `index.html`. Me avise se quiser que eu gere ele a partir do logo real.
 
 ---
 
@@ -120,13 +202,18 @@ caminhos, do mais simples ao mais completo:
    - `index.html`
    - a pasta `css` inteira
    - a pasta `js` inteira
-   - (`testes.html` e `rodar-testes.js` são de uso interno — **não precisa
-     subir**, e é melhor não subir mesmo)
+   - a pasta `img` inteira (é onde está o logo)
+   - (`testes.html`, `rodar-testes.js`, `conferir-tabelas.py` e os três
+     arquivos `.bat` são de uso interno — **não precisa subir**, e é melhor
+     não subir mesmo)
 6. Abra `https://mccontabilidadebrasil.com.br/calculadoras/` no navegador.
 
 **Se a página abrir sem cor nenhuma e sem funcionar:** as pastas `css` e `js`
 não subiram junto ou subiram no lugar errado. Confira se ficou
 `calculadoras/css/estilo.css` e `calculadoras/js/tabelas.js`.
+
+**Se o logo sumir depois de publicar:** a pasta `img` não subiu. A página cai
+no desenho de reserva, então ela continua funcionando — mas suba a pasta.
 
 ### Opção B — Hospedagem gratuita (Netlify)
 
@@ -168,9 +255,13 @@ Fluxo completo, todo ano (ou quando sair uma lei nova):
 4. Atualize no topo do arquivo: `versao`, `atualizadoEm` e
    `conferidoNaFonteOficial`.
 5. Atualize os valores esperados em `js/testes.js` refazendo a conta na mão.
-6. Abra `testes.html` e confirme que está tudo passando.
-7. Atualize a lista "Fontes das tabelas utilizadas" no final do `index.html`.
-8. Suba os arquivos alterados para a hospedagem.
+6. Dê dois cliques em `2-CONFERIR-CALCULOS.bat` e confirme que está tudo
+   passando.
+7. Dê dois cliques em `3-CONFERIR-TABELAS-NO-GOV.bat` para conferir os números
+   novos nos sites oficiais. Se você mudou valores, atualize também a lista
+   `VERIFICACOES` dentro de `conferir-tabelas.py`.
+8. Atualize a lista "Fontes das tabelas utilizadas" no final do `index.html`.
+9. Suba os arquivos alterados para a hospedagem.
 
 ### 📌 Revisões já previstas
 

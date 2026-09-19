@@ -405,6 +405,45 @@ function iniciarFormularioEnquadramento() {
 
 /* ------------------------------ RODAPÉ / INÍCIO -------------------------- */
 
+/* -----------------------------------------------------------------------------
+   LOGO — tenta img/logo.png, depois img/logo.svg, e só então cai no desenho
+   de reserva que está embutido no HTML. Assim o Bruno troca o logo apenas
+   soltando o arquivo na pasta img, sem editar código nenhum.
+   O src é definido aqui (e não no HTML) para garantir que o tratamento de
+   erro já esteja ligado quando o navegador tentar carregar a imagem.
+----------------------------------------------------------------------------- */
+function iniciarLogos() {
+  var imagens = document.querySelectorAll('[data-logo]');
+  var reservas = document.querySelectorAll('[data-logo-reserva]');
+  var pendentes = imagens.length;
+
+  function mostrarReserva() {
+    for (var r = 0; r < reservas.length; r++) reservas[r].hidden = false;
+  }
+  if (pendentes === 0) { mostrarReserva(); return; }
+
+  for (var i = 0; i < imagens.length; i++) {
+    (function (img) {
+      var base = img.getAttribute('data-logo');
+      var tentativas = [base + '.png', base + '.svg'];
+      var indice = 0;
+
+      img.addEventListener('load', function () { img.hidden = false; });
+      img.addEventListener('error', function () {
+        indice++;
+        if (indice < tentativas.length) {
+          img.src = tentativas[indice];
+        } else {
+          img.remove();
+          mostrarReserva();
+        }
+      });
+
+      img.src = tentativas[0];
+    })(imagens[i]);
+  }
+}
+
 function preencherDadosDoEscritorio() {
   var e = TABELAS.escritorio;
   var alvos = document.querySelectorAll('[data-escritorio]');
@@ -426,6 +465,7 @@ function preencherDadosDoEscritorio() {
    Isso permite reaproveitar as funções de cálculo em testes fora do navegador. */
 if (typeof document !== 'undefined' && document.addEventListener) {
   document.addEventListener('DOMContentLoaded', function () {
+    iniciarLogos();
     iniciarAbas();
     iniciarFormularioIR();
     iniciarFormularioEnquadramento();

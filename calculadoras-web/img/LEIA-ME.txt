@@ -1,0 +1,65 @@
+COMO COLOCAR O LOGO REAL DA M CONTABILIDADE
+===========================================
+
+O logo que está na página agora é PROVISÓRIO (o arquivo logo.svg desta pasta).
+
+Nesta pasta existem dois arquivos provisórios, que são o MESMO desenho:
+
+      logo.png   <- é este que a página usa
+      logo.svg   <- a versão em vetor do mesmo desenho
+
+Para trocar pelo logo de verdade, faça UMA das duas coisas:
+
+
+  OPÇÃO 1 (mais fácil) — você tem o logo em imagem
+  ------------------------------------------------
+  Apague o logo.png que está aqui e coloque o SEU logo no lugar,
+  com o nome exato:
+
+      logo.png
+
+  Pronto. Atualize a página no navegador (tecla F5) e o logo novo aparece.
+
+
+  OPÇÃO 2 (melhor qualidade) — você tem o logo em vetor
+  -----------------------------------------------------
+  Se você tiver o logo em vetor (arquivo .ai, .eps ou .svg), peça ao
+  designer o arquivo .svg e salve nesta pasta como:
+
+      logo.svg
+
+  ATENÇÃO: nesse caso, APAGUE o arquivo logo.png desta pasta.
+  Se você deixar os dois, a página usa o .png (que é o provisório) e
+  vai parecer que a troca não funcionou.
+
+
+A ORDEM QUE A PÁGINA PROCURA
+----------------------------
+  1º  img/logo.png     <- se existir, usa este
+  2º  img/logo.svg     <- se não achar o .png, usa este
+  3º  desenho embutido <- se não achar nenhum, desenha um "MC" simples
+
+Ou seja: nunca fica sem logo, e você nunca precisa editar código.
+
+
+RECOMENDAÇÕES PARA O ARQUIVO logo.png
+-------------------------------------
+  - Fundo TRANSPARENTE (o site é escuro; logo com fundo branco fica com
+    um retângulo branco feio em volta).
+  - Altura de pelo menos 200 pixels, para não ficar borrado em celular
+    e em tela de alta resolução.
+  - Logo em cor clara ou dourada funciona melhor no fundo escuro.
+    Se o logo do escritório for escuro, peça ao designer a "versão para
+    fundo escuro" (quase todo logo tem).
+  - Formato largo (deitado) funciona melhor que quadrado no cabeçalho.
+
+
+ONDE MAIS O LOGO APARECE
+------------------------
+  - Cabeçalho do site (topo de todas as abas)
+  - Rodapé
+  - Ícone da aba do navegador (favicon)
+
+O ícone da aba do navegador é um desenho separado, dentro do arquivo
+index.html. Se quiser trocar também, me avise que eu gero a partir do
+seu logo.

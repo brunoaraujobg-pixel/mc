@@ -1,0 +1,28 @@
+<!--
+  LOGO PROVISÓRIO — substitua pelo logo real da M Contabilidade.
+  Basta salvar o logo do escritório nesta pasta como "logo.png" (ou "logo.svg")
+  que a página passa a usar o arquivo novo automaticamente. Não precisa mexer
+  em código nenhum. Veja img/LEIA-ME.txt.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 100" width="430" height="100"
+     role="img" aria-label="M Contabilidade — Recife, Pernambuco">
+  <defs>
+    <linearGradient id="ouro" x1="0" y1="0" x2="0.9" y2="1">
+      <stop offset="0%"   stop-color="#ffd98f"/>
+      <stop offset="50%"  stop-color="#ffb020"/>
+      <stop offset="100%" stop-color="#cf8a16"/>
+    </linearGradient>
+  </defs>
+
+  <!-- monograma -->
+  <rect x="4" y="12" width="76" height="76" rx="18" fill="none" stroke="url(#ouro)" stroke-width="3.5"/>
+  <text x="42" y="64" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif"
+        font-size="37" font-weight="700" fill="url(#ouro)" letter-spacing="-1">MC</text>
+  <rect x="22" y="72" width="40" height="3" rx="1.5" fill="url(#ouro)" opacity="0.5"/>
+
+  <!-- marca nominativa -->
+  <text x="98" y="52" font-family="Georgia, 'Times New Roman', serif"
+        font-size="35" font-weight="700" fill="url(#ouro)">M Contabilidade</text>
+  <text x="100" y="75" font-family="'Segoe UI', system-ui, Arial, sans-serif"
+        font-size="12.5" letter-spacing="3.4" fill="#9fb0cc">RECIFE &#183; PERNAMBUCO</text>
+</svg>

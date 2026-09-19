@@ -60,6 +60,10 @@ a { color: var(--azul); }
   gap: 16px; padding-top: 14px; padding-bottom: 14px; flex-wrap: wrap;
 }
 .marca { display: flex; align-items: center; gap: 14px; }
+.marca-reserva { display: flex; align-items: center; gap: 14px; }
+.logo-img { height: 56px; width: auto; max-width: min(330px, 62vw); display: block; }
+.logo-rodape { height: 46px; max-width: 250px; margin-bottom: 4px; }
+[hidden] { display: none !important; }
 .logo { width: 50px; height: 50px; flex: 0 0 50px; }
 .marca-texto { display: flex; flex-direction: column; line-height: 1.25; }
 .marca-nome {

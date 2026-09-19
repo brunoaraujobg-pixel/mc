@@ -12,14 +12,19 @@
 
 <header class="cabecalho">
   <div class="conteudo cabecalho-interno">
+    <!-- O logo vem do arquivo img/logo.png (ou img/logo.svg). Se nenhum dos dois
+         existir, aparece o desenho de reserva abaixo. Ver img/LEIA-ME.txt. -->
     <div class="marca">
-      <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
-        <rect x="2" y="2" width="96" height="96" rx="20" fill="none" stroke="#ffb020" stroke-width="4"/>
-        <text x="50" y="68" font-size="50" font-family="Georgia, serif" font-weight="700" fill="#ffb020" text-anchor="middle">MC</text>
-      </svg>
-      <div class="marca-texto">
-        <span class="marca-nome" data-escritorio="nome">M Contabilidade</span>
-        <span class="marca-sub">Contabilidade, tributos e departamento pessoal — Recife/PE</span>
+      <img class="logo-img" data-logo="img/logo" alt="M Contabilidade" hidden>
+      <div class="marca-reserva" data-logo-reserva hidden>
+        <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
+          <rect x="2" y="2" width="96" height="96" rx="20" fill="none" stroke="#ffb020" stroke-width="4"/>
+          <text x="50" y="68" font-size="50" font-family="Georgia, serif" font-weight="700" fill="#ffb020" text-anchor="middle">MC</text>
+        </svg>
+        <div class="marca-texto">
+          <span class="marca-nome" data-escritorio="nome">M Contabilidade</span>
+          <span class="marca-sub">Contabilidade, tributos e departamento pessoal — Recife/PE</span>
+        </div>
       </div>
     </div>
     <a class="botao botao-whats botao-topo" data-whatsapp href="#" target="_blank" rel="noopener">Falar com um contador</a>
@@ -209,7 +214,8 @@
 <footer class="rodape">
   <div class="conteudo rodape-interno">
     <div class="rodape-bloco">
-      <span class="rodape-nome" data-escritorio="nome">M Contabilidade</span>
+      <img class="logo-img logo-rodape" data-logo="img/logo" alt="M Contabilidade" hidden>
+      <span class="rodape-nome" data-logo-reserva hidden data-escritorio="nome">M Contabilidade</span>
       <span data-escritorio="endereco">Rua da Palma, 295 — Sala 113, Santo Antônio, Recife-PE</span>
     </div>
     <div class="rodape-bloco">
