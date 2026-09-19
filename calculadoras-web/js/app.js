@@ -20,17 +20,39 @@ function formatarPercentual(fracao, casas) {
   }) + '%';
 }
 
-/* Aceita "3.000,00", "3000,00", "3000.00" e "3000" */
+/* Lê um número digitado do jeito brasileiro.
+   Aceita: 3500 | 3.500 | 3.500,00 | 3500,00 | R$ 3.500,00 | 1.234.567,89 | 3500.50
+
+   O caso que exige cuidado é o ponto SEM vírgula. No Brasil "300.000" é
+   trezentos mil, mas o Number() do JavaScript lê isso como 300 — e lê
+   "1.000.000" como erro, porque tem dois pontos. Por isso, quando o texto
+   tem a cara de separador de milhar (grupos de exatamente 3 dígitos), os
+   pontos são removidos. Fora desse formato, o ponto continua valendo como
+   separador decimal, para quem digita "3500.50" ou "4.5" num campo de
+   percentual. */
 function parseNumeroBR(texto) {
   if (texto === null || texto === undefined) return null;
-  var s = String(texto).trim();
+
+  var s = String(texto).trim().replace(/[R$\s\u00a0]/g, '');
   if (s === '') return null;
-  s = s.replace(/[R$\s]/g, '');
+
+  var negativo = s.charAt(0) === '-';
+  if (negativo) s = s.slice(1);
+
   if (s.indexOf(',') > -1) {
+    // Tem vírgula: ela é o separador decimal e os pontos são de milhar.
     s = s.replace(/\./g, '').replace(',', '.');
+  } else if (/^\d{1,3}(\.\d{3})+$/.test(s)) {
+    // "300.000", "1.000.000": pontos de milhar, sem centavos.
+    s = s.replace(/\./g, '');
   }
+  // Nos demais casos ("3500", "3500.50", "4.5") o texto já serve como está.
+
+  if (!/^\d*\.?\d+$/.test(s)) return null;
+
   var n = Number(s);
-  return isNaN(n) ? null : n;
+  if (isNaN(n)) return null;
+  return negativo ? -n : n;
 }
 
 /* ------------------------------ ABAS ------------------------------------- */

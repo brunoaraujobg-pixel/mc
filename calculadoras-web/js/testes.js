@@ -167,6 +167,32 @@ function rodarTestes() {
   });
   conferir('Lucro Real — 600.000, margem 10%, créditos 60%: total anual', lr1.total, 36600.00);
 
+  /* ============ LEITURA DOS NÚMEROS DIGITADOS ============
+     Regressão encontrada testando com valores realistas: quem digitava
+     "300.000" (jeito brasileiro, ponto de milhar e sem centavos) recebia
+     R$ 300,00, e "1.000.000" dava erro de campo inválido. */
+  function conferirTexto2(nome, obtido, esperado) {
+    var ok = obtido === esperado;
+    testes.push({ nome: nome, esperado: String(esperado), obtido: String(obtido), ok: ok, texto: true });
+  }
+
+  conferirTexto2('Entrada "3500" vale 3500',              parseNumeroBR('3500'), 3500);
+  conferirTexto2('Entrada "3.500" vale 3500 (e nao 3,5)', parseNumeroBR('3.500'), 3500);
+  conferirTexto2('Entrada "3.500,00" vale 3500',          parseNumeroBR('3.500,00'), 3500);
+  conferirTexto2('Entrada "3500,00" vale 3500',           parseNumeroBR('3500,00'), 3500);
+  conferirTexto2('Entrada "R$ 3.500,00" vale 3500',       parseNumeroBR('R$ 3.500,00'), 3500);
+  conferirTexto2('Entrada "300.000" vale 300000',         parseNumeroBR('300.000'), 300000);
+  conferirTexto2('Entrada "1.000.000" vale 1000000',      parseNumeroBR('1.000.000'), 1000000);
+  conferirTexto2('Entrada "1.234.567,89" vale 1234567,89',parseNumeroBR('1.234.567,89'), 1234567.89);
+  conferirTexto2('Entrada "5.000,01" vale 5000,01',       parseNumeroBR('5.000,01'), 5000.01);
+  conferirTexto2('Percentual "4,5" vale 4,5',             parseNumeroBR('4,5'), 4.5);
+  conferirTexto2('Percentual "4.5" continua valendo 4,5', parseNumeroBR('4.5'), 4.5);
+  conferirTexto2('Entrada "3500.50" continua valendo 3500,50', parseNumeroBR('3500.50'), 3500.5);
+  conferirTexto2('Entrada "0" vale zero',                 parseNumeroBR('0'), 0);
+  conferirTexto2('Campo vazio devolve nulo',              parseNumeroBR(''), null);
+  conferirTexto2('Texto invalido devolve nulo',           parseNumeroBR('abc'), null);
+  conferirTexto2('Pontuacao sem sentido devolve nulo',    parseNumeroBR('1.2.3'), null);
+
   /* ======================= CPP ======================= */
   // 120.000 x 27,8% (20% patronal + 2% RAT + 5,8% terceiros) = 33.360
   conferir('CPP — folha de 120.000 a 27,8%', calcularCPP(120000), 33360.00);
