@@ -89,7 +89,9 @@ calculadoras-web/
 │   USO INTERNO (não precisa subir para a hospedagem)
 ├── testes.html                    Página de conferência dos cálculos
 ├── rodar-testes.js                A mesma conferência, pelo terminal
-└── conferir-tabelas.py            O script que confere as tabelas no gov.br
+├── conferir-tabelas.py            Confere as tabelas nos sites do gov.br
+├── testar-conferidor.py           Testes do próprio conferidor acima
+└── testes-navegador.js            Abre a página num navegador e confere a tela
 ```
 
 **A regra mais importante do projeto:** nenhum valor de tabela pode ser escrito
@@ -181,6 +183,43 @@ do `index.html`. Me avise se quiser que eu gere ele a partir do logo real.
 
 ---
 
+## Verificação automática (CI)
+
+Toda vez que alguém envia código para o GitHub, o arquivo
+`.github/workflows/testes.yml` roda a conferência sozinho. São dois trabalhos,
+porque eles pegam problemas diferentes:
+
+| Trabalho | O que confere | Por que existe |
+|---|---|---|
+| **Cálculos e sintaxe** | os 47 testes de cálculo, os 21 testes do conferidor de tabelas e a sintaxe de todos os arquivos `.js` e `.py` do repositório | pega erro de conta e arquivo quebrado; é rápido e não instala nada |
+| **Página no navegador** | abre o `index.html` num Chromium de verdade, preenche os dois formulários, confere os valores na tela, o logo, a troca de abas, o celular e exige zero erro de JavaScript | pega o que o outro não pega |
+
+O segundo trabalho existe por um motivo concreto: **as contas podem estar certas
+e a página quebrada ao mesmo tempo.** Isso foi testado de propósito — quebrando
+o `app.js`, os 47 testes de cálculo continuaram dando "47 passaram", porque eles
+não abrem a página. Só o teste de navegador acusou o problema.
+
+O que cada sabotagem de teste provocou:
+
+| Sabotagem | Quem acusou |
+|---|---|
+| Trocar uma parcela a deduzir da tabela do IR | 8 testes de cálculo + 2 do conferidor |
+| Quebrar o `app.js` | só o teste de navegador (cálculos passaram normalmente) |
+| Apagar o logo do HTML | 3 testes de navegador |
+
+Se o CI ficar vermelho num PR, o GitHub mostra qual passo falhou e com qual
+valor. **Não mescle com o CI vermelho.**
+
+Para rodar o teste de navegador na sua máquina (opcional — o CI já faz isso):
+
+```
+npm install playwright
+npx playwright install chromium
+node testes-navegador.js
+```
+
+---
+
 ## Como colocar no ar (mccontabilidadebrasil.com.br)
 
 A página é 100% estática, então dá para hospedar em qualquer lugar. Três
@@ -259,7 +298,8 @@ Fluxo completo, todo ano (ou quando sair uma lei nova):
    passando.
 7. Dê dois cliques em `3-CONFERIR-TABELAS-NO-GOV.bat` para conferir os números
    novos nos sites oficiais. Se você mudou valores, atualize também a lista
-   `VERIFICACOES` dentro de `conferir-tabelas.py`.
+   `VERIFICACOES` dentro de `conferir-tabelas.py` — existe um teste que cobra
+   isso, então o CI fica vermelho se você esquecer.
 8. Atualize a lista "Fontes das tabelas utilizadas" no final do `index.html`.
 9. Suba os arquivos alterados para a hospedagem.
 
