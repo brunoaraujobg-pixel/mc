@@ -90,16 +90,17 @@
       "observacao": "Nao intercepta HTTPS como antivirus de terceiro, entao nao quebra download de script nem integracao com portal fiscal. Conferir na Seguranca do Windows se a Protecao em tempo real e a Protecao contra ransomware (Acesso controlado a pastas) estao ligadas."
     },
     {
-      "id": "PREENCHER-sistema-contabil",
-      "nome": "Sistema Dominio (contabil)",
+      "id": "sistema-dominio-10",
+      "nome": "Sistema Dominio 10 (Thomson Reuters) - contabil",
       "categoria": "aplicativo",
       "termos": [
+        "thomson reuters",
         "dominio sistemas",
-        "thomson reuters"
+        "dominio contabil"
       ],
       "critico": true,
-      "atualizado_por": "PREENCHER - atualizacao pelo proprio sistema ou suporte",
-      "observacao": "Guarda a base de dados de todos os clientes. Conferir se o servidor esta com backup testado."
+      "atualizado_por": "atualizacao pelo proprio sistema",
+      "observacao": "Guarda a base de dados de TODOS os clientes: contabil, fiscal e folha. E o alvo de maior valor do escritorio. Conferir: backup da base testado (restaurar, nao so gerar), banco nao publicado na internet, e maquina do servidor sem uso para navegacao."
     }
   ]
 }

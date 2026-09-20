@@ -22,6 +22,7 @@ import datetime as dt
 import io
 import json
 import os
+import re
 import sys
 
 RAIZ = os.path.dirname(os.path.abspath(__file__))
@@ -44,11 +45,14 @@ def cruzar(inventario, kev, desde=None):
     vulns = kev.get("vulnerabilities", [])
     resultado = []
     for item in inventario["itens"]:
-        termos = [t.lower() for t in item.get("termos", []) if t]
+        # Palavra inteira, nao pedaco de palavra: procurar "sage" por substring
+        # casa com "teleMESSAGE", e "tim" casaria com "optimize".
+        termos = [re.compile(r"\b%s\b" % re.escape(x.lower()))
+                  for x in item.get("termos", []) if x]
         achados = []
         for v in vulns:
             alvo = ("%s %s" % (v.get("vendorProject", ""), v.get("product", ""))).lower()
-            if not any(t in alvo for t in termos):
+            if not any(rx.search(alvo) for rx in termos):
                 continue
             if desde and (v.get("dateAdded") or "") < desde:
                 continue
