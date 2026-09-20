@@ -1,0 +1,75 @@
+{
+  "versao": "1.0",
+  "atualizado_em": "2026-09-20",
+  "observacao": "O que existe no escritorio. Serve para cruzar com o catalogo CISA KEV (vulnerabilidades que atacantes JA estao explorando). Acrescente aqui cada equipamento e programa novo. 'termos' sao as palavras que aparecem no nome do fabricante/produto nas bases de vulnerabilidade.",
+  "itens": [
+    {
+      "id": "roteador-twibi-force",
+      "nome": "Intelbras Twibi Force (mesh fornecido pela TIM)",
+      "categoria": "rede",
+      "termos": ["intelbras", "twibi"],
+      "critico": true,
+      "atualizado_por": "operadora (TIM) - firmware remoto; conferir no aplicativo",
+      "observacao": "Exposto a internet 24h. Equipamento de operadora e alvo de ataque em massa."
+    },
+    {
+      "id": "windows",
+      "nome": "Microsoft Windows (estacoes e servidor)",
+      "categoria": "sistema",
+      "termos": ["microsoft windows", "windows 10", "windows 11", "windows server"],
+      "critico": true,
+      "atualizado_por": "Windows Update automatico"
+    },
+    {
+      "id": "navegador",
+      "nome": "Navegador (Chrome / Edge)",
+      "categoria": "aplicativo",
+      "termos": ["google chrome", "chromium", "microsoft edge"],
+      "critico": true,
+      "atualizado_por": "atualizacao automatica do proprio navegador"
+    },
+    {
+      "id": "office",
+      "nome": "Microsoft Office (Excel, Word, Outlook)",
+      "categoria": "aplicativo",
+      "termos": ["microsoft office", "microsoft excel", "microsoft word", "microsoft outlook"],
+      "critico": true,
+      "atualizado_por": "Microsoft 365 / Windows Update"
+    },
+    {
+      "id": "python",
+      "nome": "Python (automacoes do escritorio)",
+      "categoria": "desenvolvimento",
+      "termos": ["python software foundation"],
+      "critico": false,
+      "atualizado_por": "manual - baixar do python.org"
+    },
+    {
+      "id": "leitor-pdf",
+      "nome": "Leitor de PDF (Adobe Acrobat Reader)",
+      "categoria": "aplicativo",
+      "termos": ["adobe acrobat", "adobe reader", "foxit"],
+      "critico": true,
+      "atualizado_por": "atualizacao automatica do Adobe",
+      "observacao": "PDF de cliente e vetor comum de ataque (boleto falso, nota adulterada)."
+    },
+    {
+      "id": "PREENCHER-antivirus",
+      "nome": "PREENCHER: qual antivirus o escritorio usa",
+      "categoria": "seguranca",
+      "termos": ["windows defender"],
+      "critico": true,
+      "atualizado_por": "PREENCHER",
+      "observacao": "Se usar Kaspersky/Avast/ESET/Bitdefender, troque os termos. Antivirus de terceiro tambem tem falha e intercepta HTTPS."
+    },
+    {
+      "id": "PREENCHER-sistema-contabil",
+      "nome": "Sistema Dominio (contabil)",
+      "categoria": "aplicativo",
+      "termos": ["dominio sistemas", "thomson reuters"],
+      "critico": true,
+      "atualizado_por": "PREENCHER - atualizacao pelo proprio sistema ou suporte",
+      "observacao": "Guarda a base de dados de todos os clientes. Conferir se o servidor esta com backup testado."
+    }
+  ]
+}

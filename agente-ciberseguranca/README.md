@@ -154,13 +154,48 @@ No Claude Code, dentro deste repositorio, tambem funciona o comando `/auditoria-
 
 ---
 
-## 3. Estrutura da pasta
+## 3. Conferir o que o escritorio usa contra o que esta sendo explorado
+
+O acervo sozinho nao diz o que fazer hoje. Quem faz essa ponte e o `inventario.json`:
+uma lista do que existe no escritorio (equipamento e programa). O script cruza essa
+lista com o catalogo CISA KEV — as vulnerabilidades que atacantes **ja estao usando**.
+
+```
+python conferir_inventario.py
+```
+
+Por padrao mostra os ultimos 12 meses (falha de 2008 em maquina atualizada nao ajuda
+ninguem). Para ver tudo: `--tudo`. Para gravar o relatorio: `--salvar`.
+
+**Preencha o `inventario.json`.** Ele ja vem com Windows, navegador, Office, PDF,
+Python e o roteador; falta dizer qual antivirus e qual a versao do sistema contabil.
+Item nao declarado nunca sera conferido.
+
+Para acrescentar um equipamento, copie um bloco existente e ajuste `termos` com as
+palavras que aparecem no nome do fabricante e do produto:
+
+```json
+{
+  "id": "impressora-multifuncional",
+  "nome": "Impressora HP LaserJet",
+  "categoria": "rede",
+  "termos": ["hp laserjet", "hewlett packard"],
+  "critico": false,
+  "atualizado_por": "firmware pelo painel da impressora"
+}
+```
+
+---
+
+## 4. Estrutura da pasta
 
 ```
 agente-ciberseguranca\
 ├── README.md                    este arquivo
 ├── PROMPT-AGENTE.md             prompt do agente + prompts de execucao
-├── fontes.json                  catalogo das 24 fontes oficiais (editavel)
+├── fontes.json                  catalogo das 26 fontes oficiais (editavel)
+├── inventario.json              o que o escritorio usa (editavel - preencha!)
+├── conferir_inventario.py       cruza o inventario com as falhas em exploracao
 ├── baixar_acervo.py             baixa e mantem o acervo atualizado
 ├── auditor.py                   audita um projeto (somente leitura)
 ├── regras\
@@ -193,7 +228,7 @@ relatorios podem citar caminhos e trechos de codigo do escritorio.
 
 ---
 
-## 4. O que cada comando faz
+## 5. O que cada comando faz
 
 | Comando | Para que serve |
 |---|---|
@@ -206,6 +241,8 @@ relatorios podem citar caminhos e trechos de codigo do escritorio.
 | `python baixar_acervo.py --diagnostico` | testa cada site e explica o que esta falhando |
 | `python baixar_acervo.py --ca-bundle "C:\cert.pem"` | usa tambem o certificado do antivirus/proxy |
 | `python auditor.py --projeto "CAMINHO" --online` | audita um projeto |
+| `python conferir_inventario.py` | cruza o inventario do escritorio com o CISA KEV (ultimos 12 meses) |
+| `python conferir_inventario.py --tudo --salvar` | catalogo inteiro, gravando relatorio |
 | `python auditor.py --projeto "CAMINHO" --ignorar "*.min.js"` | audita ignorando padroes |
 
 O downloader **nao baixa de novo o que nao mudou**: ele compara ETag/data do servidor e
@@ -213,7 +250,7 @@ o hash SHA-256 do arquivo, e registra tudo em `acervo\_estado\estado.json`.
 
 ---
 
-## 5. Como ajustar sem mexer no codigo
+## 6. Como ajustar sem mexer no codigo
 
 - **Incluir uma fonte nova**: acrescente um item em `fontes.json` (copie um existente como
   modelo). Tipos aceitos: `arquivo` (URL direta), `repo_zip` (repositorio do GitHub em ZIP),
@@ -225,7 +262,7 @@ o hash SHA-256 do arquivo, e registra tudo em `acervo\_estado\estado.json`.
 
 ---
 
-## 6. Quando uma fonte falhar no download
+## 7. Quando uma fonte falhar no download
 
 Isso acontece: sites de orgao publico mudam endereco e alguns recusam download
 automatico. Erro em uma fonte **nao interrompe as outras**.
@@ -285,7 +322,7 @@ script apenas nao vai controlar a data daquele arquivo.
 
 ---
 
-## 7. Limitacoes (leia antes de confiar)
+## 8. Limitacoes (leia antes de confiar)
 
 1. **A auditoria e por padrao de texto (regex).** Ela pega os erros mais comuns, mas nao
    entende a regra de negocio. Nao substitui revisao humana nem teste de invasao.
@@ -300,12 +337,13 @@ script apenas nao vai controlar a data daquele arquivo.
 
 ---
 
-## 8. Evolucao prevista
+## 9. Evolucao prevista
 
 - **Versao 1 (atual)**: acervo automatizado + auditoria por regras + checklists + prompt
   do agente + agendamento trimestral + hook de `git push`.
-- **Versao 2**: cruzar o `requirements.txt` de todos os projetos com CISA KEV e EPSS e
-  gerar um unico relatorio semanal; inventario de softwares do escritorio em planilha.
+- **Versao 2 (parcial, ja entregue)**: `inventario.json` + `conferir_inventario.py`
+  cruzam o que o escritorio usa com o CISA KEV. Falta cruzar tambem o `requirements.txt`
+  de cada projeto e gerar um relatorio unico semanal.
 - **Versao 3**: integrar com o orquestrador de agentes; auditoria disparada automaticamente
   quando um projeto for marcado como concluido; alerta no Windows e no celular.
 - **Versao 4**: analise de codigo por AST (nao so regex), painel com historico de achados
