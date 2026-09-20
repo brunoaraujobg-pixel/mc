@@ -40,9 +40,34 @@ DIR_ESTADO = os.path.join(DIR_ACERVO, "_estado")
 DIR_LOGS = os.path.join(DIR_ACERVO, "_logs")
 ARQ_ESTADO = os.path.join(DIR_ESTADO, "estado.json")
 
-UA = "AgenteCiberseguranca/1.0 (uso interno; escritorio contabil)"
+# Alguns sites oficiais (cwe.mitre.org, nvlpubs.nist.gov) respondem 403 a
+# programas com User-Agent desconhecido. Sao documentos publicos; usamos um
+# User-Agent de navegador para nao ser recusado.
+UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+CABECALHOS_PADRAO = {
+    "User-Agent": UA,
+    "Accept": "*/*",
+    "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
+    "Connection": "close",
+}
+# Cabecalhos usados na 2a chance, quando o site devolve 403/406 (filtro de robo).
+CABECALHOS_NAVEGADOR = {
+    "User-Agent": UA,
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "cross-site",
+    "Upgrade-Insecure-Requests": "1",
+}
+CODIGOS_FILTRO_ROBO = (403, 406, 429)
+
 TENTATIVAS = 3
 ESPERA_BASE = 2  # segundos: 2, 4, 8
+
+# Preenchido por --ca-bundle (certificado da empresa/antivirus que intercepta TLS)
+CA_BUNDLE = None
 
 
 # ----------------------------------------------------------------------
@@ -102,9 +127,9 @@ def tamanho_legivel(n):
 
 
 def contexto_ssl():
-    # Respeita certificados extras informados pelo ambiente (proxy corporativo),
-    # mas NUNCA desliga a verificacao.
-    ca = os.environ.get("REQUESTS_CA_BUNDLE") or os.environ.get("SSL_CERT_FILE")
+    # Respeita certificados extras informados por --ca-bundle ou pelo ambiente
+    # (antivirus/proxy que intercepta TLS), mas NUNCA desliga a verificacao.
+    ca = CA_BUNDLE or os.environ.get("REQUESTS_CA_BUNDLE") or os.environ.get("SSL_CERT_FILE")
     if ca and os.path.exists(ca):
         return ssl.create_default_context(cafile=ca)
     return ssl.create_default_context()
@@ -113,15 +138,16 @@ def contexto_ssl():
 # ----------------------------------------------------------------------
 # download
 # ----------------------------------------------------------------------
-def abrir_url(url, cabecalhos=None, timeout=120):
-    req = urllib.request.Request(url, headers={"User-Agent": UA})
+def abrir_url(url, cabecalhos=None, timeout=120, base=None):
+    req = urllib.request.Request(url, headers=dict(base or CABECALHOS_PADRAO))
     for k, v in (cabecalhos or {}).items():
         if v:
             req.add_header(k, v)
     return urllib.request.urlopen(req, timeout=timeout, context=contexto_ssl())
 
 
-def baixar_arquivo(url, destino, meta_anterior, log, timeout=120, max_mb=None, forcar=False):
+def baixar_arquivo(url, destino, meta_anterior, log, timeout=120, max_mb=None, forcar=False,
+                   referer=None):
     """Baixa url para destino. Retorna (situacao, meta).
 
     situacao: 'novo' | 'atualizado' | 'sem-mudanca' | 'erro'
@@ -133,16 +159,38 @@ def baixar_arquivo(url, destino, meta_anterior, log, timeout=120, max_mb=None, f
         cabecalhos["If-Modified-Since"] = meta_anterior.get("last_modified")
 
     ultimo_erro = None
+    base = None          # None = CABECALHOS_PADRAO
+    tentou_navegador = False
     for tentativa in range(1, TENTATIVAS + 1):
         try:
-            resp = abrir_url(url, cabecalhos, timeout)
+            resp = abrir_url(url, cabecalhos, timeout, base=base)
         except urllib.error.HTTPError as e:
             if e.code == 304:
                 return "sem-mudanca", meta_anterior
+            # 403/406/429 costumam ser filtro de robo: vale uma 2a chance
+            # com cabecalhos de navegador completos.
+            if e.code in CODIGOS_FILTRO_ROBO and not tentou_navegador:
+                tentou_navegador = True
+                base = dict(CABECALHOS_NAVEGADOR)
+                if referer:
+                    base["Referer"] = referer
+                log("   HTTP %s (site recusou o programa). Tentando como navegador..." % e.code)
+                continue
             # 4xx nao melhora com nova tentativa
             if 400 <= e.code < 500:
-                return "erro", {"erro": "HTTP %s" % e.code, "url": url}
+                dica = ""
+                if e.code == 404:
+                    dica = " - o endereco mudou; confira a pagina oficial da fonte"
+                elif e.code in CODIGOS_FILTRO_ROBO:
+                    dica = " - o site recusou o download automatico; baixe pelo navegador"
+                return "erro", {"erro": "HTTP %s%s" % (e.code, dica), "url": url}
             ultimo_erro = "HTTP %s" % e.code
+        except ssl.SSLError as e:
+            return "erro", {
+                "erro": "falha de certificado TLS (%s) - rode 'python baixar_acervo.py "
+                        "--diagnostico' para confirmar e veja a secao de certificado no README" % e,
+                "url": url,
+            }
         except Exception as e:
             ultimo_erro = "%s: %s" % (type(e).__name__, e)
         else:
@@ -310,6 +358,110 @@ def verificar_validade(periodicidade_dias):
     return 0
 
 
+def diagnosticar(catalogo, timeout=30):
+    """Testa a conexao com cada site do catalogo e explica o resultado.
+
+    Serve para separar tres causas que dao a mesma mensagem de 'erro' na tela:
+    endereco mudou (404), site recusando programa (403) e certificado
+    interceptado por antivirus/proxy (falha de TLS).
+    """
+    import socket
+    import urllib.parse
+
+    hosts = {}
+    for f in catalogo["fontes"]:
+        for u in (f.get("url"), f.get("url_alternativa")):
+            if not u:
+                continue
+            h = urllib.parse.urlparse(u).netloc
+            hosts.setdefault(h, u)
+    for f in catalogo["fontes"]:
+        if f.get("tipo") == "repo_zip":
+            hosts.setdefault("codeload.github.com", "https://codeload.github.com")
+        if f.get("tipo") == "release_github":
+            hosts.setdefault("api.github.com", "https://api.github.com")
+
+    print("")
+    print("=" * 78)
+    print("DIAGNOSTICO DE CONEXAO - %s site(s)" % len(hosts))
+    print("=" * 78)
+    ca = CA_BUNDLE or os.environ.get("REQUESTS_CA_BUNDLE") or os.environ.get("SSL_CERT_FILE")
+    print("Python...........: %s" % sys.version.split()[0])
+    print("Certificados.....: %s" % (ca if ca else "padrao do sistema"))
+    print("Proxy do ambiente: %s" % (os.environ.get("HTTPS_PROXY")
+                                     or os.environ.get("https_proxy") or "nenhum"))
+    print("")
+
+    contagem = {}
+    for host in sorted(hosts):
+        url = hosts[host]
+        try:
+            with abrir_url(url, {"Range": "bytes=0-0"}, timeout) as r:
+                situacao, detalhe = "OK", "HTTP %s" % r.status
+        except urllib.error.HTTPError as e:
+            if e.code in (200, 206, 400, 416, 501):
+                situacao, detalhe = "OK", "HTTP %s (site respondeu)" % e.code
+            elif e.code == 404:
+                situacao, detalhe = "ENDERECO", "HTTP 404 - arquivo mudou de lugar"
+            elif e.code in CODIGOS_FILTRO_ROBO:
+                situacao, detalhe = "BLOQUEIO", "HTTP %s - site recusou o programa" % e.code
+            else:
+                situacao, detalhe = "ERRO", "HTTP %s" % e.code
+        except ssl.SSLError as e:
+            situacao, detalhe = "CERTIFICADO", str(e)
+        except socket.gaierror as e:
+            situacao, detalhe = "DNS", str(e)
+        except socket.timeout:
+            situacao, detalhe = "TIMEOUT", "sem resposta em %ss" % timeout
+        except Exception as e:
+            msg = str(e)
+            if "CERTIFICATE_VERIFY_FAILED" in msg or "certificate" in msg.lower():
+                situacao, detalhe = "CERTIFICADO", msg
+            elif "Tunnel connection failed" in msg or "proxy" in msg.lower():
+                situacao, detalhe = "PROXY", msg
+            elif "timed out" in msg.lower():
+                situacao, detalhe = "TIMEOUT", msg
+            else:
+                situacao, detalhe = "ERRO", "%s: %s" % (type(e).__name__, msg)
+        contagem[situacao] = contagem.get(situacao, 0) + 1
+        print("  %-11s %-42s %s" % (situacao, host, detalhe[:110]))
+
+    print("")
+    print("-" * 78)
+    print("COMO LER ESTE RESULTADO")
+    print("-" * 78)
+    total = len(hosts)
+    if contagem.get("OK", 0) == total:
+        print("  Todos os sites respondem. Se ainda houve erro no download, o problema e")
+        print("  o endereco de um arquivo especifico (404), nao a conexao.")
+    elif contagem.get("CERTIFICADO"):
+        print("  CERTIFICADO: seu antivirus/firewall esta interceptando a conexao segura.")
+        print("  Nao desligue a verificacao. Exporte o certificado da ferramenta e rode:")
+        print("      python baixar_acervo.py --ca-bundle \"C:\\caminho\\certificado.pem\"")
+        print("  Ou libere os sites nvlpubs.nist.gov e cwe.mitre.org no antivirus.")
+    if contagem.get("BLOQUEIO"):
+        print("  BLOQUEIO: o site recusa download automatico. Baixe pelo navegador e salve")
+        print("  na pasta indicada no acervo/INDICE.md.")
+    if contagem.get("ENDERECO"):
+        print("  ENDERECO: o arquivo mudou de lugar. Corrija a URL em fontes.json")
+        print("  (abra a pagina oficial da fonte, indicada no campo 'pagina').")
+    if contagem.get("DNS"):
+        print("  DNS: o computador nao resolveu o nome do site. Verifique a internet e,")
+        print("  se houver proxy na empresa, a variavel HTTPS_PROXY.")
+    if contagem.get("TIMEOUT"):
+        print("  TIMEOUT: site lento ou bloqueado por firewall. Tente com --timeout 300.")
+    if contagem.get("PROXY"):
+        print("  PROXY: a rede exige proxy e ele recusou estes sites. Fale com quem cuida da")
+        print("  rede/antivirus para liberar os dominios, ou rode de uma rede sem esse filtro.")
+    if contagem.get("ERRO"):
+        print("  ERRO: falha de rede nao classificada. Confira internet e firewall; se")
+        print("  persistir, mande este resultado completo junto com o log de acervo\\_logs.")
+    print("")
+    print("Copie este resultado inteiro ao pedir ajuda.")
+    print("")
+    return 0 if contagem.get("OK", 0) == total else 1
+
+
 # ----------------------------------------------------------------------
 # principal
 # ----------------------------------------------------------------------
@@ -325,7 +477,19 @@ def main():
     p.add_argument("--timeout", type=int, default=180, help="timeout de rede em segundos (padrao 180)")
     p.add_argument("--verificar-validade", action="store_true",
                    help="apenas informa se o acervo esta vencido (sai com codigo 2 se estiver)")
+    p.add_argument("--diagnostico", action="store_true",
+                   help="testa a conexao com cada site oficial e explica o que esta falhando")
+    p.add_argument("--ca-bundle",
+                   help="caminho de um certificado .pem da empresa/antivirus que intercepta TLS "
+                        "(mantem a verificacao ligada, apenas confia tambem nele)")
     args = p.parse_args()
+
+    global CA_BUNDLE
+    if args.ca_bundle:
+        if not os.path.exists(args.ca_bundle):
+            print("ERRO: certificado nao encontrado: %s" % args.ca_bundle)
+            return 3
+        CA_BUNDLE = args.ca_bundle
 
     if not os.path.exists(ARQ_FONTES):
         print("ERRO: nao encontrei fontes.json em %s" % ARQ_FONTES)
@@ -335,6 +499,9 @@ def main():
         print("ERRO: fontes.json invalido.")
         return 3
     periodicidade = catalogo.get("periodicidade_dias", 90)
+
+    if args.diagnostico:
+        return diagnosticar(catalogo, timeout=min(args.timeout, 45))
 
     if args.verificar_validade:
         return verificar_validade(periodicidade)
@@ -396,7 +563,8 @@ def main():
             log("   URL: %s" % url)
             situacao, meta = baixar_arquivo(
                 url, destino, meta_anterior, log,
-                timeout=args.timeout, max_mb=f.get("max_mb"), forcar=args.forcar)
+                timeout=args.timeout, max_mb=f.get("max_mb"), forcar=args.forcar,
+                referer=f.get("pagina"))
             if situacao != "erro":
                 break
 

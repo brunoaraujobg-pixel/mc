@@ -203,6 +203,8 @@ relatorios podem citar caminhos e trechos de codigo do escritorio.
 | `python baixar_acervo.py --categoria rede` | baixa apenas uma categoria |
 | `python baixar_acervo.py --id cisa-kev-json --forcar` | rebaixa uma fonte especifica |
 | `python baixar_acervo.py --verificar-validade` | diz se o acervo esta vencido |
+| `python baixar_acervo.py --diagnostico` | testa cada site e explica o que esta falhando |
+| `python baixar_acervo.py --ca-bundle "C:\cert.pem"` | usa tambem o certificado do antivirus/proxy |
 | `python auditor.py --projeto "CAMINHO" --online` | audita um projeto |
 | `python auditor.py --projeto "CAMINHO" --ignorar "*.min.js"` | audita ignorando padroes |
 
@@ -223,7 +225,67 @@ o hash SHA-256 do arquivo, e registra tudo em `acervo\_estado\estado.json`.
 
 ---
 
-## 6. Limitacoes (leia antes de confiar)
+## 6. Quando uma fonte falhar no download
+
+Isso acontece: sites de orgao publico mudam endereco e alguns recusam download
+automatico. Erro em uma fonte **nao interrompe as outras**.
+
+### Passo 1 — rodar o diagnostico
+
+```
+python baixar_acervo.py --diagnostico
+```
+
+Ele testa cada site e classifica o resultado. A leitura:
+
+| Resultado | O que significa | O que fazer |
+|---|---|---|
+| `OK` | site respondeu | se houve erro, o problema e o endereco de um arquivo especifico |
+| `ENDERECO` | HTTP 404: o arquivo mudou de lugar | abrir a pagina oficial da fonte e corrigir a URL em `fontes.json` |
+| `BLOQUEIO` | HTTP 403/406: o site recusou o programa | o script ja tenta de novo como navegador; se insistir, baixar pelo navegador |
+| `CERTIFICADO` | antivirus/firewall interceptando a conexao segura | ver passo 2 |
+| `PROXY` | proxy da rede recusou o site | pedir liberacao do dominio a quem cuida da rede |
+| `DNS` / `TIMEOUT` | sem resolucao de nome ou sem resposta | conferir internet; tentar `--timeout 300` |
+
+### Passo 2 — se aparecer CERTIFICADO
+
+Alguns antivirus (Kaspersky, Avast, ESET, Bitdefender) inspecionam conexoes HTTPS
+substituindo o certificado do site. O Python nao reconhece esse certificado e recusa
+a conexao — corretamente.
+
+**Nao desligue a verificacao.** Duas saidas seguras:
+
+1. Liberar os dominios no antivirus (`nvlpubs.nist.gov`, `cwe.mitre.org`,
+   `capec.mitre.org`, `www.cisa.gov`, `cartilha.cert.br`).
+2. Exportar o certificado do antivirus em formato `.pem` e usar:
+
+```
+python baixar_acervo.py --ca-bundle "C:\caminho\certificado.pem"
+```
+
+A verificacao continua ligada; o script apenas passa a confiar tambem nesse certificado.
+
+### Passo 3 — se for endereco mudado
+
+1. Abra o arquivo `fontes.json`.
+2. Ache a fonte pelo `id` que apareceu no erro.
+3. Abra no navegador o endereco do campo `pagina` (e a pagina oficial da fonte).
+4. Ache o link do arquivo, copie e substitua o valor do campo `url`.
+5. Rode de novo apenas aquela fonte:
+
+```
+python baixar_acervo.py --id ID-DA-FONTE --forcar
+```
+
+### Passo 4 — download manual (ultimo recurso)
+
+Se o site exigir navegador, baixe pelo navegador e salve com o nome que esta no
+campo `arquivo`, dentro de `acervo\<categoria>\`. O acervo continua servindo; o
+script apenas nao vai controlar a data daquele arquivo.
+
+---
+
+## 7. Limitacoes (leia antes de confiar)
 
 1. **A auditoria e por padrao de texto (regex).** Ela pega os erros mais comuns, mas nao
    entende a regra de negocio. Nao substitui revisao humana nem teste de invasao.
@@ -238,7 +300,7 @@ o hash SHA-256 do arquivo, e registra tudo em `acervo\_estado\estado.json`.
 
 ---
 
-## 7. Evolucao prevista
+## 8. Evolucao prevista
 
 - **Versao 1 (atual)**: acervo automatizado + auditoria por regras + checklists + prompt
   do agente + agendamento trimestral + hook de `git push`.
