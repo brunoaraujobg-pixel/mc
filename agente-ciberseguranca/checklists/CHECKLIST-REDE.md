@@ -23,6 +23,24 @@ Referencias no acervo: `rede/NIST_SP_800-41r1_firewall.pdf`,
 - [ ] Nenhuma porta redirecionada (port forwarding) sem necessidade justificada e documentada.
 - [ ] **RDP (porta 3389) nao exposto direto na internet.** Se ha acesso remoto, e por VPN.
 
+### Se o roteador for da operadora (Vivo, TIM, Claro, Oi - ex: Intelbras Twibi)
+
+Equipamento fornecido pela operadora e gerenciado por ela: o firmware e atualizado
+remotamente, mas a operadora mantem acesso de gestao ao aparelho, e roteador de
+provedor e alvo classico de ataque em massa. O que continua sendo sua parte:
+
+- [ ] Senha de ADMINISTRACAO trocada (costuma vir igual a do Wi-Fi ou na etiqueta -
+      quem entra na rede consegue administrar o roteador).
+- [ ] Rede de visitantes ativa, separada da rede de trabalho. Celulares, clientes e
+      visitas entram nela; o Dominio e os certificados ficam na principal.
+- [ ] WPS (botao de pareamento) desligado.
+- [ ] Nenhum redirecionamento de porta ativo sem necessidade - nunca a 3389 (RDP).
+- [ ] Lista de dispositivos conectados revisada; nada desconhecido.
+- [ ] Firmware conferido no aplicativo. Desatualizado e responsabilidade da operadora:
+      abrir chamado e guardar o protocolo.
+- [ ] Modelo exato anotado (ex: Twibi Force, Giga+, AX) para conferir CVE nova a cada
+      atualizacao trimestral do acervo.
+
 ## 2. Estacoes e servidor
 
 - [ ] Windows com atualizacoes automaticas ativas em todas as maquinas.
