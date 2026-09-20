@@ -45,6 +45,11 @@ provedor e alvo classico de ataque em massa. O que continua sendo sua parte:
 
 - [ ] Windows com atualizacoes automaticas ativas em todas as maquinas.
 - [ ] Antivirus/Defender ativo, com verificacao periodica e alertas chegando a alguem.
+- [ ] No Defender (Seguranca do Windows > Protecao contra virus e ameacas), conferir:
+      Protecao em tempo real LIGADA, Protecao contra adulteracao LIGADA e
+      **Acesso controlado a pastas LIGADO** apontando para as pastas de XML, documentos
+      e base do sistema contabil — e a protecao especifica contra ransomware, e vem
+      desligada por padrao.
 - [ ] Firewall do Windows ativo em todas as maquinas.
 - [ ] Usuario do dia a dia **nao** e administrador (conta de administrador separada).
 - [ ] Disco criptografado (BitLocker) em notebooks que saem do escritorio.

@@ -7,7 +7,10 @@
       "id": "roteador-twibi-force",
       "nome": "Intelbras Twibi Force (mesh fornecido pela TIM)",
       "categoria": "rede",
-      "termos": ["intelbras", "twibi"],
+      "termos": [
+        "intelbras",
+        "twibi"
+      ],
       "critico": true,
       "atualizado_por": "operadora (TIM) - firmware remoto; conferir no aplicativo",
       "observacao": "Exposto a internet 24h. Equipamento de operadora e alvo de ataque em massa."
@@ -16,7 +19,12 @@
       "id": "windows",
       "nome": "Microsoft Windows (estacoes e servidor)",
       "categoria": "sistema",
-      "termos": ["microsoft windows", "windows 10", "windows 11", "windows server"],
+      "termos": [
+        "microsoft windows",
+        "windows 10",
+        "windows 11",
+        "windows server"
+      ],
       "critico": true,
       "atualizado_por": "Windows Update automatico"
     },
@@ -24,7 +32,11 @@
       "id": "navegador",
       "nome": "Navegador (Chrome / Edge)",
       "categoria": "aplicativo",
-      "termos": ["google chrome", "chromium", "microsoft edge"],
+      "termos": [
+        "google chrome",
+        "chromium",
+        "microsoft edge"
+      ],
       "critico": true,
       "atualizado_por": "atualizacao automatica do proprio navegador"
     },
@@ -32,7 +44,12 @@
       "id": "office",
       "nome": "Microsoft Office (Excel, Word, Outlook)",
       "categoria": "aplicativo",
-      "termos": ["microsoft office", "microsoft excel", "microsoft word", "microsoft outlook"],
+      "termos": [
+        "microsoft office",
+        "microsoft excel",
+        "microsoft word",
+        "microsoft outlook"
+      ],
       "critico": true,
       "atualizado_por": "Microsoft 365 / Windows Update"
     },
@@ -40,7 +57,9 @@
       "id": "python",
       "nome": "Python (automacoes do escritorio)",
       "categoria": "desenvolvimento",
-      "termos": ["python software foundation"],
+      "termos": [
+        "python software foundation"
+      ],
       "critico": false,
       "atualizado_por": "manual - baixar do python.org"
     },
@@ -48,25 +67,36 @@
       "id": "leitor-pdf",
       "nome": "Leitor de PDF (Adobe Acrobat Reader)",
       "categoria": "aplicativo",
-      "termos": ["adobe acrobat", "adobe reader", "foxit"],
+      "termos": [
+        "adobe acrobat",
+        "adobe reader",
+        "foxit"
+      ],
       "critico": true,
       "atualizado_por": "atualizacao automatica do Adobe",
       "observacao": "PDF de cliente e vetor comum de ataque (boleto falso, nota adulterada)."
     },
     {
-      "id": "PREENCHER-antivirus",
-      "nome": "PREENCHER: qual antivirus o escritorio usa",
+      "id": "antivirus-defender",
+      "nome": "Microsoft Defender (antivirus do proprio Windows)",
       "categoria": "seguranca",
-      "termos": ["windows defender"],
+      "termos": [
+        "windows defender",
+        "microsoft defender",
+        "defender for endpoint"
+      ],
       "critico": true,
-      "atualizado_por": "PREENCHER",
-      "observacao": "Se usar Kaspersky/Avast/ESET/Bitdefender, troque os termos. Antivirus de terceiro tambem tem falha e intercepta HTTPS."
+      "atualizado_por": "Windows Update - definicoes atualizadas varias vezes ao dia",
+      "observacao": "Nao intercepta HTTPS como antivirus de terceiro, entao nao quebra download de script nem integracao com portal fiscal. Conferir na Seguranca do Windows se a Protecao em tempo real e a Protecao contra ransomware (Acesso controlado a pastas) estao ligadas."
     },
     {
       "id": "PREENCHER-sistema-contabil",
       "nome": "Sistema Dominio (contabil)",
       "categoria": "aplicativo",
-      "termos": ["dominio sistemas", "thomson reuters"],
+      "termos": [
+        "dominio sistemas",
+        "thomson reuters"
+      ],
       "critico": true,
       "atualizado_por": "PREENCHER - atualizacao pelo proprio sistema ou suporte",
       "observacao": "Guarda a base de dados de todos os clientes. Conferir se o servidor esta com backup testado."
