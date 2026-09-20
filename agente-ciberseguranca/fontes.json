@@ -1,6 +1,6 @@
 {
   "versao": "1.0",
-  "atualizado_em": "2026-09-19",
+  "atualizado_em": "2026-09-20",
   "observacao": "Catalogo de fontes OFICIAIS de ciberseguranca. Edite este arquivo para incluir/remover fontes. Nao invente URLs: sempre confirme na pagina oficial indicada em 'pagina'.",
   "periodicidade_dias": 90,
   "fontes": [
@@ -320,6 +320,32 @@
       "fonte_oficial": "Portal Nacional da NF-e",
       "essencial": false,
       "descricao": "Nao ha link fixo de download. Contem as regras de certificado digital, TLS e assinatura usadas nas integracoes de nota fiscal. Baixar manualmente a versao vigente e salvar em acervo/brasil/."
+    },
+    {
+      "id": "capec-stix-github",
+      "nome": "CAPEC 2.1 - padroes de ataque em STIX (repositorio oficial da MITRE)",
+      "categoria": "ataques",
+      "tipo": "arquivo",
+      "url": "https://raw.githubusercontent.com/mitre/cti/master/capec/2.1/stix-capec.json",
+      "arquivo": "MITRE_CAPEC_2.1_stix.json",
+      "formato": "json",
+      "fonte_oficial": "MITRE - repositorio cti",
+      "pagina": "https://github.com/mitre/cti",
+      "essencial": true,
+      "descricao": "Mesmo conteudo do CAPEC em XML, publicado pela MITRE no GitHub. Serve de saida quando capec.mitre.org nao responde na rede do escritorio."
+    },
+    {
+      "id": "nist-800-53-oscal",
+      "nome": "NIST SP 800-53 rev.5 - catalogo de controles em JSON (OSCAL)",
+      "categoria": "frameworks",
+      "tipo": "arquivo",
+      "url": "https://raw.githubusercontent.com/usnistgov/oscal-content/main/nist.gov/SP800-53/rev5/json/NIST_SP-800-53_rev5_catalog.json",
+      "arquivo": "NIST_SP800-53r5_catalogo_controles.json",
+      "formato": "json",
+      "fonte_oficial": "NIST - repositorio usnistgov/oscal-content",
+      "pagina": "https://github.com/usnistgov/oscal-content",
+      "essencial": false,
+      "descricao": "Os mesmos controles do PDF do 800-53, em formato de dados (pesquisavel por codigo de controle). Saida quando nvlpubs.nist.gov nao responde."
     }
   ]
 }
