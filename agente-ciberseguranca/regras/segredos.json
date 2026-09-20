@@ -104,15 +104,15 @@
     },
     {
       "id": "SEC008",
-      "nome": "Token/segredo gravado em log ou print",
+      "nome": "Valor de segredo ou dado pessoal gravado em log ou print",
       "severidade": "ALTO",
       "cwe": "CWE-532",
       "owasp": "A09:2021",
-      "regex": "(?i)(print|logg?ing?\\.(info|debug|warning|error)|logger\\.\\w+)\\s*\\(.*\\b(senha|password|token|api_?key|secret|cpf|certificado)\\b",
+      "regex": "(?i)(print|logging\\.(info|debug|warning|error|critical)|logger\\.\\w+|console\\.log)\\s*\\((\\s*\\w*(senha|password|passwd|pwd|token|api_?key|apikey|secret|chave)\\w*\\s*[,)]|[^)]*\\{[^}]*\\b(senha|password|passwd|pwd|token|api_?key|apikey|secret|cpf|certificado)\\w*[^}]*\\}|[^)]*(\\+|%|,\\s*)\\s*\\w*[._]?(senha|password|passwd|pwd|token|api_?key|apikey|secret|cpf)\\w*)",
       "extensoes": [
         "*"
       ],
-      "recomendacao": "Nunca registre credencial nem dado pessoal em log. Se precisar identificar, registre apenas os 3 ultimos caracteres ou um hash."
+      "recomendacao": "Nunca registre o VALOR de credencial nem dado pessoal em log. Se precisar identificar, registre apenas os 3 ultimos caracteres ou um hash. Mencionar a palavra em texto explicativo nao e problema; imprimir a variavel e."
     },
     {
       "id": "SEC009",
