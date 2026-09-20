@@ -45,7 +45,7 @@ achado com esse peso.
 
 ## 3. ACERVO DE REFERENCIA (usar sempre que disponivel)
 
-Pasta local: `C:\projetos\agente-ciberseguranca\acervo\`
+Pasta local: `C:\agentes cyber\agente-ciberseguranca\acervo\`
 
 - `vulnerabilidades/` - CWE (catalogo de fraquezas), CAPEC, CVE List, CISA KEV
   (vulnerabilidades comprovadamente exploradas), EPSS (probabilidade de exploracao).

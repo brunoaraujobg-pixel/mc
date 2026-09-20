@@ -32,13 +32,20 @@ o PATH nao foi marcado: reinstale marcando a opcao.
 
 ### Passo 2 — Colocar a pasta no lugar certo
 
-Copie esta pasta para:
+Copie esta pasta para dentro da pasta de agentes:
 
 ```
-C:\projetos\agente-ciberseguranca
+C:\agentes cyber\agente-ciberseguranca
 ```
 
-Se usar outro caminho, funciona igual: apenas troque o caminho nos comandos abaixo.
+Se a pasta `C:\agentes cyber` ainda nao existir, crie antes: abra o Prompt de Comando
+(tecla Windows, digite `cmd`) e rode `mkdir "C:\agentes cyber"`. As aspas sao necessarias
+por causa do espaco no nome.
+
+Qualquer outro caminho funciona igual — inclusive com espaco e acento no nome da pasta.
+Todos os scripts se localizam sozinhos e usam aspas nos caminhos (testado com caminho
+contendo espaco, tanto no download quanto na auditoria). Se usar outro lugar, apenas
+troque o caminho nos comandos abaixo.
 
 ### Passo 3 — Baixar o acervo pela primeira vez
 
@@ -47,7 +54,7 @@ Abra a pasta `windows` e de **dois cliques em `atualizar_acervo.bat`**.
 Ou, pelo Prompt de Comando:
 
 ```
-cd C:\projetos\agente-ciberseguranca
+cd C:\agentes cyber\agente-ciberseguranca
 python baixar_acervo.py --somente-essenciais
 ```
 
@@ -72,7 +79,7 @@ python baixar_acervo.py --id cve-lista-completa
 Abra o PowerShell **como Administrador** e rode:
 
 ```
-powershell -ExecutionPolicy Bypass -File "C:\projetos\agente-ciberseguranca\windows\agendar_trimestral.ps1"
+powershell -ExecutionPolicy Bypass -File "C:\agentes cyber\agente-ciberseguranca\windows\agendar_trimestral.ps1"
 ```
 
 Isso cria uma tarefa no Agendador do Windows que roda dia 1 de **janeiro, abril, julho e
@@ -93,7 +100,7 @@ Forma mais simples: **arraste a pasta do projeto e solte sobre `windows\auditar_
 Pelo Prompt de Comando:
 
 ```
-cd C:\projetos\agente-ciberseguranca
+cd C:\agentes cyber\agente-ciberseguranca
 python auditor.py --projeto "C:\projetos\importar-notas" --online
 ```
 
@@ -122,7 +129,7 @@ se recusa a entrar nas pastas protegidas (`C:\NOTA ENTRADA`, `C:\NOTA SAIDA`,
 ### Bloquear `git push` inseguro (opcional, recomendado)
 
 ```
-powershell -ExecutionPolicy Bypass -File "C:\projetos\agente-ciberseguranca\windows\instalar_hook_git.ps1" -Projeto "C:\projetos\importar-notas"
+powershell -ExecutionPolicy Bypass -File "C:\agentes cyber\agente-ciberseguranca\windows\instalar_hook_git.ps1" -Projeto "C:\projetos\importar-notas"
 ```
 
 A partir daí, todo `git push` naquele projeto roda a auditoria primeiro e **cancela o envio**
