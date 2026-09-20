@@ -13,7 +13,7 @@
       "severidade": "CRITICO",
       "cwe": "CWE-95",
       "owasp": "A03:2021",
-      "regex": "(?<![\\w.])(eval|exec)\\s*\\(",
+      "regex": "(?<![\\w.$])(eval|exec)\\s*\\(",
       "extensoes": [
         ".py",
         ".js",
@@ -210,11 +210,11 @@
       "severidade": "MEDIO",
       "cwe": "CWE-319",
       "owasp": "A02:2021",
-      "regex": "[\\\"']http://(?!localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0)[a-zA-Z0-9\\.\\-]+",
+      "regex": "[\\\"']http://(?!localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0|\\[::1\\]|(www\\.)?w3\\.org|schemas\\.|purl\\.org|docs\\.oasis-open\\.org|xmlns|(www\\.)?portalfiscal\\.inf\\.br|(www\\.)?sped\\.fazenda\\.gov\\.br|(www\\.)?prefeitura|(www\\.)?abrasf\\.org\\.br)[a-zA-Z0-9\\.\\-]+",
       "extensoes": [
         "*"
       ],
-      "recomendacao": "Use https:// em qualquer integracao externa. Em http o trafego (inclusive token) pode ser lido na rede."
+      "recomendacao": "Use https:// em qualquer integracao externa. Em http o trafego (inclusive token) pode ser lido na rede. Namespace de XML (NF-e, CT-e, NFS-e, SVG) nao e conexao e nao precisa mudar."
     },
     {
       "id": "COD017",

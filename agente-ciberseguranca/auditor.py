@@ -205,26 +205,52 @@ OBRIGATORIOS_GITIGNORE = [
 ]
 
 
+def gitignores_aplicaveis(raiz):
+    """Lista os .gitignore que valem para este projeto.
+
+    Um projeto costuma ser uma pasta dentro de um repositorio maior (e a convencao
+    deste repositorio). Nesse caso o .gitignore da raiz do repositorio protege o
+    projeto, e cobrar um .gitignore proprio seria ruido.
+    """
+    encontrados = []
+    atual = os.path.abspath(raiz)
+    while True:
+        cand = os.path.join(atual, ".gitignore")
+        if os.path.exists(cand):
+            encontrados.append(cand)
+        if os.path.isdir(os.path.join(atual, ".git")):
+            break                      # chegou na raiz do repositorio
+        pai = os.path.dirname(atual)
+        if pai == atual:
+            break                      # chegou na raiz do disco
+        atual = pai
+    return encontrados
+
+
 def verificar_gitignore(raiz):
     achados = []
-    caminho = os.path.join(raiz, ".gitignore")
-    if not os.path.exists(caminho):
+    arquivos_gi = gitignores_aplicaveis(raiz)
+    if not arquivos_gi:
         achados.append(achado(
             id="GIT001", nome="Projeto sem .gitignore", severidade="ALTO",
             categoria="higiene-git", cwe="CWE-312", arquivo=".gitignore",
-            trecho="arquivo inexistente",
+            trecho="nao existe .gitignore nem na pasta do projeto nem na raiz do repositorio",
             recomendacao="Crie um .gitignore com pelo menos: .env, *.pfx, *.p12, *.pem, *.key, *.log, __pycache__/, *.db. "
                          "Sem isso e facil enviar certificado e senha para o GitHub sem perceber."))
         return achados
-    with open(caminho, "r", encoding="utf-8", errors="replace") as f:
-        conteudo = f.read()
+    conteudo = ""
+    for cam in arquivos_gi:
+        with open(cam, "r", encoding="utf-8", errors="replace") as f:
+            conteudo += f.read() + "\n"
+    onde = ", ".join(os.path.relpath(c, raiz) for c in arquivos_gi)
     faltando = [(p, sev, desc) for p, sev, desc in OBRIGATORIOS_GITIGNORE if p not in conteudo]
     for padrao, sev, desc in faltando:
         achados.append(achado(
             id="GIT002", nome="Padrao ausente no .gitignore: %s (%s)" % (padrao, desc),
-            severidade=sev, categoria="higiene-git", cwe="CWE-312", arquivo=".gitignore",
-            trecho="padrao nao encontrado no arquivo",
-            recomendacao="Acrescente a linha '%s' ao .gitignore." % padrao))
+            severidade=sev, categoria="higiene-git", cwe="CWE-312", arquivo=onde,
+            trecho="padrao nao encontrado em: %s" % onde,
+            recomendacao="Acrescente a linha '%s' ao .gitignore (o do projeto ou o da raiz do "
+                         "repositorio, que tambem vale)." % padrao))
     return achados
 
 
