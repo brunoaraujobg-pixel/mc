@@ -1,0 +1,150 @@
+{
+  "versao": "1.0",
+  "descricao": "Regras de deteccao de segredos, credenciais e dados sensiveis em codigo.",
+  "ignorar_linha_se_contem": [
+    "# nosec",
+    "# seguranca-ok",
+    "EXEMPLO",
+    "exemplo",
+    "placeholder",
+    "PREENCHER",
+    "xxxxxxxx",
+    "SEU_TOKEN",
+    "seu_token",
+    "<",
+    "os.environ",
+    "getenv",
+    "keyring",
+    "input("
+  ],
+  "regras": [
+    {
+      "id": "SEC001",
+      "nome": "Senha de certificado digital (A1/.pfx) escrita no codigo",
+      "severidade": "CRITICO",
+      "cwe": "CWE-798",
+      "owasp": "A07:2021",
+      "regex": "(?i)(senha_?cert\\w*|cert_?senha|senha_?pfx|pfx_?password|password_?pfx)\\s*[:=]\\s*[\\\"'][^\\\"']{3,}[\\\"']",
+      "extensoes": [
+        "*"
+      ],
+      "recomendacao": "Nunca deixe a senha do certificado A1 no codigo. Guarde em variavel de ambiente ou no Gerenciador de Credenciais do Windows (modulo keyring) e leia em tempo de execucao."
+    },
+    {
+      "id": "SEC002",
+      "nome": "Chave privada colada dentro do arquivo",
+      "severidade": "CRITICO",
+      "cwe": "CWE-798",
+      "owasp": "A02:2021",
+      "regex": "-----BEGIN (RSA |EC |DSA |OPENSSH |ENCRYPTED )?PRIVATE KEY-----",
+      "extensoes": [
+        "*"
+      ],
+      "recomendacao": "Remova a chave do arquivo, gere uma nova (a antiga deve ser considerada comprometida) e guarde fora do repositorio."
+    },
+    {
+      "id": "SEC003",
+      "nome": "Senha/token/segredo generico com valor fixo no codigo",
+      "severidade": "CRITICO",
+      "cwe": "CWE-798",
+      "owasp": "A07:2021",
+      "regex": "(?i)\\b(senha|password|passwd|pwd|token|api_?key|apikey|secret|secret_?key|client_?secret|access_?key|chave_?api)\\w*\\s*[:=]\\s*[\\\"'][^\\\"'\\s]{6,}[\\\"']",
+      "extensoes": [
+        "*"
+      ],
+      "recomendacao": "Mova para arquivo .env (fora do Git) ou variavel de ambiente. No codigo use os.environ['NOME'] e falhe com mensagem clara se faltar."
+    },
+    {
+      "id": "SEC004",
+      "nome": "String de conexao de banco com senha embutida",
+      "severidade": "CRITICO",
+      "cwe": "CWE-798",
+      "owasp": "A05:2021",
+      "regex": "(?i)((postgres|postgresql|mysql|mongodb(\\+srv)?|mssql|redis|amqp)://[^\\s:/]+:[^\\s@\\\"']+@)|((password|pwd)\\s*=\\s*[^;\\s\\\"']{4,};)",
+      "extensoes": [
+        "*"
+      ],
+      "recomendacao": "Monte a string de conexao a partir de variaveis de ambiente. Nunca versione usuario e senha de banco."
+    },
+    {
+      "id": "SEC005",
+      "nome": "Credencial de provedor de nuvem / IA / GitHub",
+      "severidade": "CRITICO",
+      "cwe": "CWE-798",
+      "owasp": "A07:2021",
+      "regex": "(AKIA[0-9A-Z]{16})|(AIza[0-9A-Za-z_\\-]{30,})|(gh[pousr]_[0-9A-Za-z]{30,})|(sk-[A-Za-z0-9\\-_]{20,})|(xox[baprs]-[0-9A-Za-z\\-]{10,})",
+      "extensoes": [
+        "*"
+      ],
+      "recomendacao": "Revogue a credencial imediatamente no painel do provedor (ela ja deve ser considerada vazada) e gere outra fora do codigo."
+    },
+    {
+      "id": "SEC006",
+      "nome": "Login de portal do governo/sistema contabil com senha fixa",
+      "severidade": "CRITICO",
+      "cwe": "CWE-798",
+      "owasp": "A07:2021",
+      "regex": "(?i)((ecac|sefaz|efisco|e-fisco|gov\\.br|jucepe|dominio|esocial|fgts|caixa|simples)\\w*[_\\s]*(senha|password|pwd|codigo_?acesso)|(senha|password|pwd)_?(ecac|sefaz|efisco|jucepe|dominio|esocial|fgts|gov))\\w*\\s*[:=]\\s*[\\\"'][^\\\"']{3,}[\\\"']",
+      "extensoes": [
+        "*"
+      ],
+      "recomendacao": "Credenciais de portais fiscais dao acesso a dados de todos os clientes. Guarde em cofre/keyring, com acesso por procuracao eletronica quando possivel."
+    },
+    {
+      "id": "SEC007",
+      "nome": "Senha digitada diretamente em automacao de navegador (Selenium)",
+      "severidade": "ALTO",
+      "cwe": "CWE-798",
+      "owasp": "A07:2021",
+      "regex": "send_keys\\s*\\(\\s*[\\\"'][^\\\"']{6,}[\\\"']\\s*\\)",
+      "extensoes": [
+        ".py"
+      ],
+      "recomendacao": "Passe o valor por variavel lida do ambiente. Confirme tambem que o valor nao vai para o log."
+    },
+    {
+      "id": "SEC008",
+      "nome": "Valor de segredo ou dado pessoal gravado em log ou print",
+      "severidade": "ALTO",
+      "cwe": "CWE-532",
+      "owasp": "A09:2021",
+      "regex": "(?i)(print|logging\\.(info|debug|warning|error|critical)|logger\\.\\w+|console\\.log)\\s*\\((\\s*\\w*(senha|password|passwd|pwd|token|api_?key|apikey|secret|chave)\\w*\\s*[,)]|[^)]*\\{[^}]*\\b(senha|password|passwd|pwd|token|api_?key|apikey|secret|cpf|certificado)\\w*[^}]*\\}|[^)]*(\\+|%|,\\s*)\\s*\\w*[._]?(senha|password|passwd|pwd|token|api_?key|apikey|secret|cpf)\\w*)",
+      "extensoes": [
+        "*"
+      ],
+      "recomendacao": "Nunca registre o VALOR de credencial nem dado pessoal em log. Se precisar identificar, registre apenas os 3 ultimos caracteres ou um hash. Mencionar a palavra em texto explicativo nao e problema; imprimir a variavel e."
+    },
+    {
+      "id": "SEC009",
+      "nome": "CPF ou CNPJ fixo dentro do codigo",
+      "severidade": "MEDIO",
+      "cwe": "CWE-359",
+      "owasp": "A01:2021",
+      "regex": "[\\\"'](\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}|\\d{2}\\.\\d{3}\\.\\d{3}/\\d{4}-\\d{2})[\\\"']",
+      "extensoes": [
+        ".py",
+        ".js",
+        ".ts",
+        ".java",
+        ".cs",
+        ".php",
+        ".ps1",
+        ".bat",
+        ".sql"
+      ],
+      "recomendacao": "Dado pessoal (LGPD) nao deve ficar no codigo. Traga de um cadastro/banco. Para teste use CPF/CNPJ ficticio."
+    },
+    {
+      "id": "SEC010",
+      "nome": "Senha padrao obvia (admin/123456/mudar123)",
+      "severidade": "ALTO",
+      "cwe": "CWE-1392",
+      "owasp": "A07:2021",
+      "regex": "(?i)[\\\"'](admin|administrador|123456|1234|senha|senha123|mudar123|teste123|root|password)[\\\"']\\s*(\\)|,|$|\\])",
+      "extensoes": [
+        "*"
+      ],
+      "recomendacao": "Elimine senha padrao. Exija cadastro de senha no primeiro acesso e valide tamanho minimo conforme NIST SP 800-63B."
+    }
+  ]
+}

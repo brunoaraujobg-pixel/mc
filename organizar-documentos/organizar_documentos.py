@@ -22,6 +22,29 @@ from datetime import datetime
 # ============================================================
 PASTA_DOCUMENTOS = r"C:\PROJETOS\Analista_Contabil\documentos"
 
+# ============================================================
+# 2) TRAVA DE SEGURANCA - nao mexa nesta lista sem pensar duas vezes
+# ============================================================
+# Estas pastas alimentam OUTROS sistemas (importacao de notas, EFD, Fronteira).
+# Eles dependem do padrao de pastas e de arquivos soltos onde estao. Se este
+# script rodar em uma delas, reorganiza tudo em subpastas e quebra a importacao
+# — sem desfazer automatico. Por isso a execucao e recusada nesses caminhos.
+PASTAS_PROIBIDAS = [
+    r"c:\nota entrada",
+    r"c:\nota saida",
+    r"c:\nota saída",
+    r"c:\fronteira",
+    r"\efd",
+    r"relatorios de api",
+    r"relatórios de api",
+]
+
+
+def caminho_proibido(caminho):
+    """Diz se o caminho informado (ou uma pasta acima dele) e de uso de outro sistema."""
+    baixo = os.path.abspath(caminho).lower().replace("/", "\\")
+    return [p for p in PASTAS_PROIBIDAS if p in baixo]
+
 # Palavras-chave (em minúsculo) que identificam cada agente/assunto.
 # Pode adicionar mais palavras nas listas conforme for precisando.
 CATEGORIAS = {
@@ -63,6 +86,16 @@ def mover_sem_sobrescrever(origem, pasta_destino):
 
 
 def main():
+    proibidas = caminho_proibido(PASTA_DOCUMENTOS)
+    if proibidas:
+        print("ERRO: esta pasta alimenta outro sistema e NAO pode ser reorganizada.")
+        print(f"  Pasta informada: {PASTA_DOCUMENTOS}")
+        print(f"  Regra atingida.: {', '.join(proibidas)}")
+        print("")
+        print("Mover arquivos daqui quebra a importacao de notas, a EFD ou a Fronteira.")
+        print("Se realmente for necessario, faca manualmente, com backup antes.")
+        return
+
     if not os.path.isdir(PASTA_DOCUMENTOS):
         print(f"ERRO: pasta não encontrada: {PASTA_DOCUMENTOS}")
         print("Ajuste a variável PASTA_DOCUMENTOS no início do script.")

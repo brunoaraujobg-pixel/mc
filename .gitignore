@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+
+# Credenciais e certificados nunca entram no repositorio
+.env
+.env.*
+!.env.exemplo
+*.pfx
+*.p12
+*.jks
+*.pem
+*.key
+*.ppk
+
+# Dados, logs e bancos locais
+*.log
+*.db
+*.sqlite
+*.sqlite3
+*.bak

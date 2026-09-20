@@ -1,0 +1,106 @@
+{
+  "versao": "1.0",
+  "atualizado_em": "2026-09-20",
+  "observacao": "O que existe no escritorio. Serve para cruzar com o catalogo CISA KEV (vulnerabilidades que atacantes JA estao explorando). Acrescente aqui cada equipamento e programa novo. 'termos' sao as palavras que aparecem no nome do fabricante/produto nas bases de vulnerabilidade.",
+  "itens": [
+    {
+      "id": "roteador-twibi-force",
+      "nome": "Intelbras Twibi Force (mesh fornecido pela TIM)",
+      "categoria": "rede",
+      "termos": [
+        "intelbras",
+        "twibi"
+      ],
+      "critico": true,
+      "atualizado_por": "operadora (TIM) - firmware remoto; conferir no aplicativo",
+      "observacao": "Exposto a internet 24h. Equipamento de operadora e alvo de ataque em massa."
+    },
+    {
+      "id": "windows",
+      "nome": "Microsoft Windows (estacoes e servidor)",
+      "categoria": "sistema",
+      "termos": [
+        "microsoft windows",
+        "windows 10",
+        "windows 11",
+        "windows server"
+      ],
+      "critico": true,
+      "atualizado_por": "Windows Update automatico"
+    },
+    {
+      "id": "navegador",
+      "nome": "Navegador (Chrome / Edge)",
+      "categoria": "aplicativo",
+      "termos": [
+        "google chrome",
+        "chromium",
+        "microsoft edge"
+      ],
+      "critico": true,
+      "atualizado_por": "atualizacao automatica do proprio navegador"
+    },
+    {
+      "id": "office",
+      "nome": "Microsoft Office (Excel, Word, Outlook)",
+      "categoria": "aplicativo",
+      "termos": [
+        "microsoft office",
+        "microsoft excel",
+        "microsoft word",
+        "microsoft outlook"
+      ],
+      "critico": true,
+      "atualizado_por": "Microsoft 365 / Windows Update"
+    },
+    {
+      "id": "python",
+      "nome": "Python (automacoes do escritorio)",
+      "categoria": "desenvolvimento",
+      "termos": [
+        "python software foundation"
+      ],
+      "critico": false,
+      "atualizado_por": "manual - baixar do python.org"
+    },
+    {
+      "id": "leitor-pdf",
+      "nome": "Leitor de PDF (Adobe Acrobat Reader)",
+      "categoria": "aplicativo",
+      "termos": [
+        "adobe acrobat",
+        "adobe reader",
+        "foxit"
+      ],
+      "critico": true,
+      "atualizado_por": "atualizacao automatica do Adobe",
+      "observacao": "PDF de cliente e vetor comum de ataque (boleto falso, nota adulterada)."
+    },
+    {
+      "id": "antivirus-defender",
+      "nome": "Microsoft Defender (antivirus do proprio Windows)",
+      "categoria": "seguranca",
+      "termos": [
+        "windows defender",
+        "microsoft defender",
+        "defender for endpoint"
+      ],
+      "critico": true,
+      "atualizado_por": "Windows Update - definicoes atualizadas varias vezes ao dia",
+      "observacao": "Nao intercepta HTTPS como antivirus de terceiro, entao nao quebra download de script nem integracao com portal fiscal. Conferir na Seguranca do Windows se a Protecao em tempo real e a Protecao contra ransomware (Acesso controlado a pastas) estao ligadas."
+    },
+    {
+      "id": "sistema-dominio-10",
+      "nome": "Sistema Dominio 10 (Thomson Reuters) - contabil",
+      "categoria": "aplicativo",
+      "termos": [
+        "thomson reuters",
+        "dominio sistemas",
+        "dominio contabil"
+      ],
+      "critico": true,
+      "atualizado_por": "atualizacao pelo proprio sistema",
+      "observacao": "Guarda a base de dados de TODOS os clientes: contabil, fiscal e folha. E o alvo de maior valor do escritorio. Conferir: backup da base testado (restaurar, nao so gerar), banco nao publicado na internet, e maquina do servidor sem uso para navegacao."
+    }
+  ]
+}

@@ -29,6 +29,13 @@ Nada é excluído em nenhuma etapa.
    PASTA_DOCUMENTOS = r"C:\PROJETOS\Analista_Contabil\documentos"
    ```
    para o caminho real da sua pasta de documentos.
+
+   > **Trava de segurança:** o script **recusa** rodar em pastas que alimentam
+   > outros sistemas — `C:\NOTA ENTRADA`, `C:\NOTA SAIDA`, `C:\Fronteira`,
+   > pastas de EFD e de relatórios de API. Reorganizar uma dessas quebraria a
+   > importação de notas, e não há desfazer automático. Se precisar mexer nelas,
+   > faça manualmente e com backup antes. A lista está em `PASTAS_PROIBIDAS`,
+   > no início do script.
 3. Rode pelo terminal (cmd/PowerShell), na pasta onde o arquivo está:
    ```
    python organizar_documentos.py

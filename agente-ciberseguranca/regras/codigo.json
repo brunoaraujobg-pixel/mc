@@ -1,0 +1,275 @@
+{
+  "versao": "1.0",
+  "descricao": "Regras de padroes de codigo inseguro por linguagem.",
+  "ignorar_linha_se_contem": [
+    "# nosec",
+    "# seguranca-ok",
+    "// nosec"
+  ],
+  "regras": [
+    {
+      "id": "COD001",
+      "nome": "Execucao de codigo dinamico (eval/exec)",
+      "severidade": "CRITICO",
+      "cwe": "CWE-95",
+      "owasp": "A03:2021",
+      "regex": "(?<![\\w.$])(eval|exec)\\s*\\(",
+      "extensoes": [
+        ".py",
+        ".js",
+        ".ts",
+        ".php"
+      ],
+      "recomendacao": "Nao use eval/exec com nada que venha de arquivo, planilha, API ou usuario. Troque por json.loads, ast.literal_eval ou um dicionario de funcoes permitidas."
+    },
+    {
+      "id": "COD002",
+      "nome": "Comando de sistema com shell=True ou os.system",
+      "severidade": "ALTO",
+      "cwe": "CWE-78",
+      "owasp": "A03:2021",
+      "regex": "(os\\.system\\s*\\()|(subprocess\\.\\w+\\([^)]*shell\\s*=\\s*True)|(child_process\\.(exec|execSync)\\s*\\()",
+      "extensoes": [
+        ".py",
+        ".js",
+        ".ts"
+      ],
+      "recomendacao": "Use subprocess.run([\"programa\", \"argumento\"]) com lista e shell=False. Assim um nome de arquivo malicioso nao vira comando."
+    },
+    {
+      "id": "COD003",
+      "nome": "SQL montado por concatenacao ou f-string",
+      "severidade": "CRITICO",
+      "cwe": "CWE-89",
+      "owasp": "A03:2021",
+      "regex": "(?i)(execute|executemany|query|cursor\\.execute)\\s*\\(\\s*(f[\\\"']|[\\\"'][^\\\"']*(select|insert|update|delete|drop)[^\\\"']*[\\\"']\\s*(\\+|%)|[\\\"'][^\\\"']*(select|insert|update|delete)[^\\\"']*\\{)",
+      "extensoes": [
+        ".py",
+        ".js",
+        ".ts",
+        ".php",
+        ".cs",
+        ".java"
+      ],
+      "recomendacao": "Use consulta parametrizada: cursor.execute(\"SELECT * FROM t WHERE cnpj = ?\", (cnpj,)). Nunca concatene valor na string SQL."
+    },
+    {
+      "id": "COD004",
+      "nome": "Verificacao de certificado TLS desligada",
+      "severidade": "ALTO",
+      "cwe": "CWE-295",
+      "owasp": "A02:2021",
+      "regex": "(verify\\s*=\\s*False)|(ssl\\._create_unverified_context)|(CERT_NONE)|(rejectUnauthorized\\s*:\\s*false)|(check_hostname\\s*=\\s*False)",
+      "extensoes": [
+        "*"
+      ],
+      "recomendacao": "Nunca desligue a verificacao TLS em integracao com SEFAZ/Receita/banco: abre porta para interceptacao. Se o problema for certificado da cadeia, instale o certificado correto (parametro verify=caminho_do_ca)."
+    },
+    {
+      "id": "COD005",
+      "nome": "Desserializacao insegura (pickle / yaml.load)",
+      "severidade": "CRITICO",
+      "cwe": "CWE-502",
+      "owasp": "A08:2021",
+      "regex": "(pickle\\.loads?\\s*\\()|(yaml\\.load\\s*\\((?![^)]*SafeLoader))|(marshal\\.loads\\s*\\()",
+      "extensoes": [
+        ".py"
+      ],
+      "recomendacao": "Arquivo pickle recebido de fora executa codigo ao ser aberto. Use JSON. Para YAML use yaml.safe_load."
+    },
+    {
+      "id": "COD006",
+      "nome": "Leitura de XML sem protecao contra XXE / bomba de entidades",
+      "severidade": "ALTO",
+      "cwe": "CWE-611",
+      "owasp": "A05:2021",
+      "regex": "(xml\\.etree\\.ElementTree\\.(parse|fromstring))|(minidom\\.parse)|(ET\\.(parse|fromstring))|(lxml\\.etree\\.(parse|fromstring))",
+      "extensoes": [
+        ".py"
+      ],
+      "recomendacao": "Voce processa XML de NF-e/CT-e vindo de terceiros. Use defusedxml (pip install defusedxml) no lugar de xml.etree: 'from defusedxml.ElementTree import parse'. Valide tambem o tamanho do arquivo antes de abrir."
+    },
+    {
+      "id": "COD007",
+      "nome": "Servidor web em modo debug",
+      "severidade": "CRITICO",
+      "cwe": "CWE-489",
+      "owasp": "A05:2021",
+      "regex": "(?i)(\\bdebug\\s*=\\s*True)|(FLASK_DEBUG\\s*=\\s*1)|(app\\.run\\([^)]*debug\\s*=\\s*True)",
+      "extensoes": [
+        ".py",
+        ".env",
+        ".cfg",
+        ".ini",
+        ".yaml",
+        ".yml"
+      ],
+      "recomendacao": "Modo debug exposto na web permite executar codigo no servidor (console do Werkzeug). Deve estar desligado em producao."
+    },
+    {
+      "id": "COD008",
+      "nome": "Servico escutando em todas as interfaces de rede",
+      "severidade": "MEDIO",
+      "cwe": "CWE-1327",
+      "owasp": "A05:2021",
+      "regex": "(host\\s*=\\s*[\\\"']0\\.0\\.0\\.0[\\\"'])|(--host[= ]0\\.0\\.0\\.0)|(listen\\s*\\(\\s*[\\\"']?0\\.0\\.0\\.0)",
+      "extensoes": [
+        "*"
+      ],
+      "recomendacao": "0.0.0.0 publica o servico para toda a rede. Para uso interno use 127.0.0.1. Se precisar de acesso em rede, restrinja por firewall e exija autenticacao."
+    },
+    {
+      "id": "COD009",
+      "nome": "CORS liberado para qualquer origem",
+      "severidade": "ALTO",
+      "cwe": "CWE-942",
+      "owasp": "A05:2021",
+      "regex": "(?i)(allow_origins\\s*=\\s*\\[\\s*[\\\"']\\*[\\\"'])|(Access-Control-Allow-Origin[\\\"']?\\s*[:,]\\s*[\\\"']\\*)|(CORS\\([^)]*origins\\s*=\\s*[\\\"']\\*)",
+      "extensoes": [
+        "*"
+      ],
+      "recomendacao": "Liste explicitamente os dominios que podem chamar a API. '*' junto com credencial permite que qualquer site use a sessao do usuario."
+    },
+    {
+      "id": "COD010",
+      "nome": "Assinatura de JWT nao verificada",
+      "severidade": "CRITICO",
+      "cwe": "CWE-347",
+      "owasp": "A07:2021",
+      "regex": "(?i)(verify_signature\\s*:\\s*False)|(verify\\s*=\\s*False[^)]*jwt)|(jwt\\.decode\\([^)]*verify\\s*=\\s*False)|(algorithms\\s*=\\s*\\[\\s*[\\\"']none[\\\"'])",
+      "extensoes": [
+        "*"
+      ],
+      "recomendacao": "Sem verificar assinatura, qualquer pessoa cria um token e entra como outro usuario. Sempre informe algorithms=['HS256'] (ou RS256) e a chave."
+    },
+    {
+      "id": "COD011",
+      "nome": "Caminho de arquivo montado com dado externo (path traversal)",
+      "severidade": "ALTO",
+      "cwe": "CWE-22",
+      "owasp": "A01:2021",
+      "regex": "(os\\.path\\.join\\([^)]*(request\\.|args\\[|form\\[|params\\[|input\\(|sys\\.argv))|(open\\s*\\(\\s*(f[\\\"']|[^,)]*\\+\\s*(request|args|params|input)))",
+      "extensoes": [
+        ".py",
+        ".js",
+        ".ts"
+      ],
+      "recomendacao": "Valide o nome do arquivo (somente letras, numeros, ponto e hifen), use os.path.basename e confirme com os.path.realpath que o caminho final continua dentro da pasta permitida."
+    },
+    {
+      "id": "COD012",
+      "nome": "Hash fraco (MD5/SHA1) ou senha sem hash apropriado",
+      "severidade": "MEDIO",
+      "cwe": "CWE-327",
+      "owasp": "A02:2021",
+      "regex": "(hashlib\\.(md5|sha1)\\s*\\()|(createHash\\s*\\(\\s*[\\\"'](md5|sha1)[\\\"'])",
+      "extensoes": [
+        "*"
+      ],
+      "recomendacao": "Para senha use bcrypt/argon2 (nunca MD5/SHA1). Para conferir integridade de arquivo use sha256."
+    },
+    {
+      "id": "COD013",
+      "nome": "Valor aleatorio previsivel usado em token/senha",
+      "severidade": "MEDIO",
+      "cwe": "CWE-330",
+      "owasp": "A02:2021",
+      "regex": "(?i)random\\.(random|randint|choice|choices|sample)\\s*\\([^)]*\\).*(token|senha|password|chave|secret)|((token|senha|password|chave)\\s*=\\s*random\\.)",
+      "extensoes": [
+        ".py"
+      ],
+      "recomendacao": "Use o modulo secrets (secrets.token_urlsafe(32)). O modulo random e previsivel e nao serve para seguranca."
+    },
+    {
+      "id": "COD014",
+      "nome": "Permissao de arquivo totalmente aberta (chmod 777)",
+      "severidade": "MEDIO",
+      "cwe": "CWE-732",
+      "owasp": "A01:2021",
+      "regex": "chmod\\s*\\(\\s*[^,]+,\\s*0o?777|icacls[^\\n]*/grant[^\\n]*Todos:F|Everyone:F",
+      "extensoes": [
+        "*"
+      ],
+      "recomendacao": "Conceda permissao apenas ao usuario que roda a rotina. Pastas com XML e folha de pagamento nao devem ficar abertas para 'Todos'."
+    },
+    {
+      "id": "COD015",
+      "nome": "Erro engolido sem tratamento (except: pass)",
+      "severidade": "BAIXO",
+      "cwe": "CWE-390",
+      "owasp": "A09:2021",
+      "regex": "except\\s*(Exception\\s*)?(as\\s+\\w+\\s*)?:\\s*(pass|continue)\\s*$",
+      "extensoes": [
+        ".py"
+      ],
+      "recomendacao": "Erro silencioso esconde invasao e falha de rotina fiscal. Registre no log (sem dado sensivel) e siga adiante de forma consciente."
+    },
+    {
+      "id": "COD016",
+      "nome": "Chamada HTTP sem HTTPS",
+      "severidade": "MEDIO",
+      "cwe": "CWE-319",
+      "owasp": "A02:2021",
+      "regex": "[\\\"']http://(?!localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0|\\[::1\\]|(www\\.)?w3\\.org|schemas\\.|purl\\.org|docs\\.oasis-open\\.org|xmlns|(www\\.)?portalfiscal\\.inf\\.br|(www\\.)?sped\\.fazenda\\.gov\\.br|(www\\.)?prefeitura|(www\\.)?abrasf\\.org\\.br)[a-zA-Z0-9\\.\\-]+",
+      "extensoes": [
+        "*"
+      ],
+      "recomendacao": "Use https:// em qualquer integracao externa. Em http o trafego (inclusive token) pode ser lido na rede. Namespace de XML (NF-e, CT-e, NFS-e, SVG) nao e conexao e nao precisa mudar."
+    },
+    {
+      "id": "COD017",
+      "nome": "Requisicao de rede sem timeout",
+      "severidade": "BAIXO",
+      "cwe": "CWE-400",
+      "owasp": "A05:2021",
+      "regex": "requests\\.(get|post|put|delete|patch)\\s*\\((?![^)]*timeout)",
+      "extensoes": [
+        ".py"
+      ],
+      "recomendacao": "Sempre informe timeout=30. Sem isso a rotina pode travar indefinidamente quando o portal do governo ficar fora do ar."
+    },
+    {
+      "id": "COD018",
+      "nome": "HTML montado com dado do usuario (XSS)",
+      "severidade": "ALTO",
+      "cwe": "CWE-79",
+      "owasp": "A03:2021",
+      "regex": "(innerHTML\\s*=)|(document\\.write\\s*\\()|(dangerouslySetInnerHTML)|(render_template_string\\s*\\()|(\\|\\s*safe\\s*\\})",
+      "extensoes": [
+        ".js",
+        ".ts",
+        ".jsx",
+        ".tsx",
+        ".html",
+        ".py"
+      ],
+      "recomendacao": "Use textContent no lugar de innerHTML e deixe o template escapar o conteudo. Nunca marque como 'safe' texto vindo de fora."
+    },
+    {
+      "id": "COD019",
+      "nome": "Validacao feita com assert",
+      "severidade": "MEDIO",
+      "cwe": "CWE-617",
+      "owasp": "A04:2021",
+      "regex": "^\\s*assert\\s+.*(request|input|args|form|params|usuario|user)",
+      "extensoes": [
+        ".py"
+      ],
+      "recomendacao": "assert desaparece quando o Python roda otimizado (-O). Valide com if + raise/retorno de erro."
+    },
+    {
+      "id": "COD020",
+      "nome": "Upload/gravacao de arquivo sem validar extensao e tamanho",
+      "severidade": "ALTO",
+      "cwe": "CWE-434",
+      "owasp": "A04:2021",
+      "regex": "(\\.save\\s*\\(\\s*os\\.path\\.join)|(request\\.files\\[)|(UploadFile)",
+      "extensoes": [
+        ".py",
+        ".js",
+        ".ts"
+      ],
+      "recomendacao": "Aceite somente as extensoes previstas (.xml, .pdf, .zip), limite o tamanho, gere um nome novo para o arquivo e grave fora da pasta publicada pelo servidor."
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+# Acervo baixado: arquivos grandes, obtidos das fontes oficiais.
+acervo/**
+!acervo/.gitkeep
+
+# Pareceres de auditoria: podem citar caminhos e trechos de codigo do escritorio.
+relatorios/**
+!relatorios/.gitkeep
