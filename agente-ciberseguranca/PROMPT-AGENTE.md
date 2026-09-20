@@ -356,3 +356,53 @@ Analise: manutencao ativa, vulnerabilidades conhecidas (OSV/NVD/KEV), permissoes
 exigidas, para onde os dados vao, exposicao de credencial, alternativa oficial e
 implicacao de LGPD. Termine com: USAR | USAR COM RESTRICAO | NAO USAR, e o motivo.
 ```
+
+## 2.8 Baixar / atualizar o acervo (delegar a execucao ao agente)
+
+Use este prompt quando quiser que o agente execute o download, resolva o que falhar
+e relate o resultado — em vez de voce rodar comando por comando.
+
+Onde rodar: numa sessao que tenha acesso ao terminal da MAQUINA DO ESCRITORIO
+(Claude Code instalado no Windows). Uma sessao na nuvem nao alcanca os sites do
+governo e da MITRE.
+
+```
+Aja como o Agente de Ciberseguranca (prompt padrao).
+
+TAREFA: baixar e deixar o acervo em dia, resolvendo o que falhar.
+PASTA DO PROJETO: C:\agentes cyber\agente-ciberseguranca
+
+Execute nesta ordem, mostrando a saida de cada comando:
+
+1. python baixar_acervo.py --verificar-validade
+2. python baixar_acervo.py --somente-essenciais
+3. Para cada fonte que terminar em ERRO:
+   a. python baixar_acervo.py --diagnostico
+   b. Classifique a causa: ENDERECO (404) | BLOQUEIO (403) | CERTIFICADO | PROXY | DNS | TIMEOUT.
+   c. Se for ENDERECO: abra a pagina oficial da fonte (campo 'pagina' em fontes.json),
+      localize o novo endereco do arquivo, corrija o campo 'url' em fontes.json e rode
+      python baixar_acervo.py --id <id> --forcar
+   d. Se for BLOQUEIO: tente novamente; se insistir, informe o link para download manual
+      e o caminho exato onde salvar.
+   e. Se for CERTIFICADO: NAO desligue a verificacao TLS. Explique como exportar o
+      certificado do antivirus e o uso de --ca-bundle.
+   f. Se for PROXY/DNS/TIMEOUT: e problema de rede, nao de URL. Diga o que pedir a quem
+      cuida da rede (dominios a liberar).
+4. python baixar_acervo.py --verificar-validade  (confirmar que ficou em dia)
+
+REGRAS:
+- Nunca invente URL. Toda correcao em fontes.json vem da pagina oficial da fonte,
+  que voce abriu e conferiu. Se nao conseguir abrir, diga isso e pare.
+- Nunca desligue verificacao de certificado (verify=False, --no-check-certificate).
+- Nao baixe a base completa de CVE (id cve-lista-completa) sem eu pedir: sao varios GB.
+- Nao altere nada fora da pasta do projeto.
+
+ENTREGUE NO FINAL:
+- Tabela: fonte | situacao (novo/atualizado/sem mudanca/erro) | tamanho.
+- O que foi corrigido em fontes.json (URL antiga -> URL nova, e a pagina oficial usada).
+- O que ficou pendente e por que, com o que eu preciso fazer.
+- Do CISA KEV recem-baixado: as vulnerabilidades novas que afetam o que usamos
+  (Windows, navegador, Python, bibliotecas dos projetos, roteador, antivirus),
+  em ordem de risco.
+- Data da proxima atualizacao prevista.
+```
