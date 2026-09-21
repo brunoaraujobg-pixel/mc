@@ -287,9 +287,12 @@ caminhos, do mais simples ao mais completo:
    - a pasta `css` inteira
    - a pasta `js` inteira
    - a pasta `img` inteira (é onde está o logo)
-   - (`testes.html`, `rodar-testes.js`, `conferir-tabelas.py` e os três
-     arquivos `.bat` são de uso interno — **não precisa subir**, e é melhor
-     não subir mesmo)
+   - **Não suba nenhum destes** (são de uso interno): `testes.html`,
+     `teste-api-indices.html`, `rodar-testes.js`, `testes-navegador.js`,
+     `conferir-tabelas.py`, `testar-conferidor.py` e os quatro arquivos `.bat`.
+     O `teste-api-indices.html` em especial: ele fala com um segundo endereço
+     (o do IBGE) que a política de segurança do site não libera, então
+     quebraria sem avisar se alguém o abrisse pelo site.
 6. Abra `https://mccontabilidadebrasil.com.br/calculadoras/` no navegador.
 
 **Se a página abrir sem cor nenhuma e sem funcionar:** as pastas `css` e `js`
@@ -336,9 +339,16 @@ ataque é pequena — mas duas proteções foram colocadas:
 
 **1. Trava do que a página pode fazer (Content-Security-Policy).**
 No topo do `index.html` existe uma política que diz ao navegador: só carregue
-script, estilo e imagem desta própria pasta, e só converse com
+script, estilo e imagem **do próprio site**, e só converse com
 `https://api.bcb.gov.br`. Se um dia alguém conseguir injetar código na página,
 ele não roda; e a página não consegue mandar dado nenhum para outro servidor.
+
+> "Do próprio site" quer dizer **do mesmo endereço**, não apenas desta pasta.
+> Se a calculadora um dia dividir o domínio com outra coisa, o que estiver
+> naquele domínio também é aceito.
+
+Existe um teste automático vigiando essa política: se alguém afrouxar — por
+exemplo permitindo código embutido na página — o CI fica vermelho.
 
 > **Se você acrescentar uma biblioteca externa** (Google Fonts, Analytics,
 > jQuery, um chat) **ou outra API, precisa liberar o endereço nessa política**,
@@ -349,6 +359,21 @@ ele não roda; e a página não consegue mandar dado nenhum para outro servidor.
 Quase tudo que a página mostra é número formatado por ela mesma. A exceção é
 o que vem da API do Banco Central e as mensagens de erro do navegador — esses
 passam por uma função que neutraliza marcação HTML antes de aparecer na tela.
+
+### Abrindo o arquivo local (dois cliques)
+
+Essa política pede um cuidado: navegador nenhum trata arquivo local do mesmo
+jeito. O Firefox, por exemplo, considera arquivo aberto do disco como "origem
+anônima", e uma política escrita sem esse cuidado faria a página abrir **sem
+estilo e com os formulários mortos, sem mensagem de erro nenhuma**.
+
+Por isso a política libera `file:` — que não permite nada no site publicado,
+porque página servida por HTTPS não carrega arquivo do disco.
+
+> **Confira uma vez, leva 10 segundos:** dê dois cliques no `index.html` e veja
+> se abre com as cores certas e se as abas trocam. Se abrir branca e sem
+> formatação, me avise — é a política bloqueando, e a correção é simples.
+> Testado no Chrome/Edge; no Firefox e no Safari não deu para testar daqui.
 
 ### Opcional, na hospedagem
 
