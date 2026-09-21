@@ -1,0 +1,100 @@
+# =============================================================================
+# TESTES — roda a cada push na main e a cada pull request
+# -----------------------------------------------------------------------------
+# São dois trabalhos, porque eles pegam coisas diferentes:
+#
+#   "calculos"   é rápido e não instala nada. Confere as CONTAS (INSS, IRRF,
+#                Simples, Lucro Presumido, Lucro Real) e a sintaxe dos arquivos.
+#
+#   "navegador"  abre a página num Chromium de verdade e confere a TELA. Existe
+#                porque as contas podem estar certas e a página quebrada ao
+#                mesmo tempo: se o app.js falhar, os testes de cálculo continuam
+#                passando e o visitante vê uma página que não funciona.
+#
+# Se você alterar as tabelas em calculadoras-web/js/tabelas.js e esquecer de
+# atualizar os valores esperados, o trabalho "calculos" fica vermelho.
+# =============================================================================
+
+name: Testes
+
+# Versões das actions: use sempre o major mais recente. Em 16/09/2026 o Node 20
+# foi removido dos runners do GitHub, e actions presas a ele passam a ser
+# forçadas para o Node 24 (com aviso hoje, quebra depois). Conferido nas tags
+# oficiais em 19/09/2026: checkout, setup-node e setup-python estão no v7.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Se chegar um push novo enquanto o anterior ainda roda, cancela o antigo.
+concurrency:
+  group: testes-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  calculos:
+    name: Cálculos e sintaxe
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Sintaxe dos arquivos JavaScript
+        run: |
+          for arquivo in calculadoras-web/js/*.js calculadoras-web/*.js; do
+            echo "verificando $arquivo"
+            node --check "$arquivo"
+          done
+
+      # Checagem de sintaxe que NÃO escreve nada em disco (o py_compile
+      # espalharia pastas __pycache__ pelo repositório).
+      - name: Sintaxe dos arquivos Python
+        run: |
+          find . -name '*.py' -not -path './.git/*' -print0 \
+            | xargs -0 -r python -c '
+          import ast, sys
+          for caminho in sys.argv[1:]:
+              print("verificando " + caminho)
+              ast.parse(open(caminho, encoding="utf-8").read(), caminho)
+          '
+
+      - name: Conferência dos cálculos (IRRF, INSS, Simples, presumido, real)
+        working-directory: calculadoras-web
+        run: node rodar-testes.js
+
+      - name: Testes do conferidor de tabelas oficiais
+        working-directory: calculadoras-web
+        run: python testar-conferidor.py
+
+  navegador:
+    name: Página no navegador
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: Instalar o Playwright
+        working-directory: calculadoras-web
+        run: |
+          npm init -y > /dev/null
+          npm install --silent 'playwright@^1'
+
+      - name: Baixar o Chromium
+        working-directory: calculadoras-web
+        run: npx playwright install --with-deps chromium
+
+      - name: Abrir a página e conferir a tela
+        working-directory: calculadoras-web
+        run: node testes-navegador.js

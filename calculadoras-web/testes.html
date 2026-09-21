@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conferência dos cálculos — Calculadoras M Contabilidade</title>
+<link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+<main class="conteudo">
+  <section class="chamada">
+    <h1>Conferência dos cálculos</h1>
+    <p>Esta página não é para o público. Ela confere os cálculos das calculadoras contra valores
+       apurados manualmente a partir das tabelas oficiais. <strong>Rode esta página sempre que
+       alterar o arquivo <code>js/tabelas.js</code>.</strong></p>
+  </section>
+  <div id="resumo"></div>
+  <div id="saida"></div>
+</main>
+
+<script src="js/tabelas.js"></script>
+<script src="js/calculo-ir.js"></script>
+<script src="js/calculo-enquadramento.js"></script>
+<script src="js/calculo-correcao.js"></script>
+<script src="js/app.js"></script>
+<script src="js/testes.js"></script>
+<script>
+(function () {
+  var resultados = rodarTestes();
+  var falhas = resultados.filter(function (t) { return !t.ok; }).length;
+
+  document.getElementById('resumo').innerHTML =
+    '<div class="aviso ' + (falhas === 0 ? 'aviso-neutro' : 'aviso-erro') + '">' +
+    '<strong>' + resultados.length + ' testes | ' + (resultados.length - falhas) +
+    ' passaram | ' + falhas + ' falharam.</strong>' +
+    (falhas === 0
+      ? ' Os cálculos batem com os valores conferidos na mão.'
+      : ' ATENÇÃO: há divergência. Não publique a página assim — verifique js/tabelas.js.') +
+    '</div>';
+
+  var linhas = resultados.map(function (t) {
+    var esperado = t.texto ? t.esperado : formatarMoeda(t.esperado);
+    var obtido = t.texto ? t.obtido : formatarMoeda(t.obtido);
+    return '<tr' + (t.ok ? '' : ' class="linha-escolhida"') + '>' +
+           '<td>' + (t.ok ? '✅' : '❌') + '</td>' +
+           '<td>' + t.nome + '</td>' +
+           '<td>' + esperado + '</td>' +
+           '<td>' + obtido + '</td></tr>';
+  }).join('');
+
+  document.getElementById('saida').innerHTML =
+    '<div class="passo"><table class="tabela"><thead><tr>' +
+    '<th></th><th>Teste</th><th>Esperado</th><th>Obtido</th>' +
+    '</tr></thead><tbody>' + linhas + '</tbody></table></div>';
+})();
+</script>
+</body>
+</html>
