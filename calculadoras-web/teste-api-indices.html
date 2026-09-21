@@ -146,7 +146,7 @@ FONTES.forEach(function (f, i) {
                  'a API não libera acesso a partir de outra página, a rede do escritório está ' +
                  'barrando, ou o site está fora do ar. Teste de outra rede para separar os casos.';
       } else {
-        motivo = msg;
+        motivo = esc(msg);
       }
       chip().className = 'chip chip-falha';
       chip().textContent = '✕ não respondeu';
@@ -155,17 +155,24 @@ FONTES.forEach(function (f, i) {
     });
 });
 
+/* Tudo aqui vem de fora (resposta da API), então vai escapado. */
+function esc(t) {
+  return String(t === null || t === undefined ? '' : t)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function resumir(dados) {
   try {
     if (Array.isArray(dados)) {
       return dados.map(function (d) {
-        return '<b>' + d.valor + '</b> <span style="opacity:.7">(' + d.data + ')</span>';
+        return '<b>' + esc(d.valor) + '</b> <span style="opacity:.7">(' + esc(d.data) + ')</span>';
       }).join(' &nbsp;·&nbsp; ');
     }
     // formato do IBGE
     var s = dados[0].resultados[0].series[0].serie;
     return Object.keys(s).map(function (k) {
-      return '<b>' + s[k] + '</b> <span style="opacity:.7">(' + k + ')</span>';
+      return '<b>' + esc(s[k]) + '</b> <span style="opacity:.7">(' + esc(k) + ')</span>';
     }).join(' &nbsp;·&nbsp; ');
   } catch (e) {
     return '<span style="opacity:.7">respondeu, mas em formato inesperado</span>';

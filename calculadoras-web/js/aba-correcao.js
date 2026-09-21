@@ -37,8 +37,12 @@ function atualizarAjudaDoIndice() {
   }
 }
 
-function erroCorrecao(saida, mensagem) {
-  saida.innerHTML = '<div class="aviso aviso-erro">' + mensagem + '</div>';
+/* As mensagens escritas por nós vêm com marcação (negrito, quebra de linha),
+   então entram como HTML. As que vêm do navegador ou da rede podem carregar
+   um pedaço da resposta, então entram escapadas. */
+function erroCorrecao(saida, mensagem, ehTextoExterno) {
+  var corpo = ehTextoExterno ? escaparHtml(mensagem) : mensagem;
+  saida.innerHTML = '<div class="aviso aviso-erro">' + corpo + '</div>';
   saida.classList.add('visivel');
 }
 
@@ -126,8 +130,9 @@ function renderizarResultadoCorrecao(r, cfg, origem, aviso) {
     html += '<div style="overflow-x:auto"><table class="tabela"><thead><tr><th>Mês</th><th>' +
             cfg.nome + '</th></tr></thead><tbody>';
     for (var i = 0; i < r.taxas.length; i++) {
-      var d = String(r.taxas[i].data).split('/');
-      html += '<tr><td>' + (d.length === 3 ? d[1] + '/' + d[2] : r.taxas[i].data) + '</td><td>' +
+      // a data vem da resposta do Banco Central: é conteúdo externo, vai escapado
+      var d = escaparHtml(r.taxas[i].data).split('/');
+      html += '<tr><td>' + (d.length === 3 ? d[1] + '/' + d[2] : escaparHtml(r.taxas[i].data)) + '</td><td>' +
               r.taxas[i].valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) +
               '%</td></tr>';
     }
@@ -238,7 +243,7 @@ function iniciarFormularioCorrecao() {
           ? 'Não consegui falar com o Banco Central agora. Pode ser a sua conexão, a rede em que você ' +
             'está, ou o site do BCB fora do ar.<br><br>Abri um campo no formulário para você informar o ' +
             '<strong>índice acumulado do período</strong> à mão — preencha e calcule de novo.'
-          : String(erro && erro.message || erro));
+          : String(erro && erro.message || erro), !semRede);
       });
   });
 

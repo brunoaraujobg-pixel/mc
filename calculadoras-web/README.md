@@ -328,6 +328,45 @@ dentro de `public_html` (igual à Opção A) e crie um item de menu apontando pa
 
 ---
 
+## Segurança da página
+
+A página passou por uma revisão de segurança. Como ela é estática, não tem
+banco de dados, não tem login e não guarda nada de ninguém, a superfície de
+ataque é pequena — mas duas proteções foram colocadas:
+
+**1. Trava do que a página pode fazer (Content-Security-Policy).**
+No topo do `index.html` existe uma política que diz ao navegador: só carregue
+script, estilo e imagem desta própria pasta, e só converse com
+`https://api.bcb.gov.br`. Se um dia alguém conseguir injetar código na página,
+ele não roda; e a página não consegue mandar dado nenhum para outro servidor.
+
+> **Se você acrescentar uma biblioteca externa** (Google Fonts, Analytics,
+> jQuery, um chat) **ou outra API, precisa liberar o endereço nessa política**,
+> senão o navegador bloqueia **em silêncio** — a página simplesmente para de
+> funcionar sem dizer por quê. É o erro mais comum com CSP.
+
+**2. Texto vindo de fora entra escapado.**
+Quase tudo que a página mostra é número formatado por ela mesma. A exceção é
+o que vem da API do Banco Central e as mensagens de erro do navegador — esses
+passam por uma função que neutraliza marcação HTML antes de aparecer na tela.
+
+### Opcional, na hospedagem
+
+Uma proteção não cabe dentro do HTML e só funciona por cabeçalho HTTP: impedir
+que outro site coloque a sua página dentro de um quadro (para se passar por
+você). Se a sua hospedagem for cPanel/Apache, dá para ligar criando um arquivo
+chamado `.htaccess` na mesma pasta, com:
+
+```
+Header always set Content-Security-Policy "frame-ancestors 'none'"
+Header always set X-Content-Type-Options "nosniff"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+```
+
+Não é obrigatório. A página funciona sem isso.
+
+---
+
 ## Como atualizar quando a tabela mudar
 
 Fluxo completo, todo ano (ou quando sair uma lei nova):

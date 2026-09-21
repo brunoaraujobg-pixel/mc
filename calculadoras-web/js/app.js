@@ -20,6 +20,21 @@ function formatarPercentual(fracao, casas) {
   }) + '%';
 }
 
+/* Escapa texto antes de colocar dentro de innerHTML.
+   Quase tudo que a página mostra é número formatado, que é seguro por
+   construção. A exceção é o que vem de FORA: a resposta da API do Banco
+   Central e as mensagens de erro do navegador, que podem carregar um
+   pedaço do corpo da resposta. Esses passam por aqui. */
+function escaparHtml(texto) {
+  if (texto === null || texto === undefined) return '';
+  return String(texto)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 /* Lê um número digitado do jeito brasileiro.
    Aceita: 3500 | 3.500 | 3.500,00 | 3500,00 | R$ 3.500,00 | 1.234.567,89 | 3500.50
 
