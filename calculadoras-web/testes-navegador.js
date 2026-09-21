@@ -92,6 +92,28 @@ async function principal() {
   conferir('logo: veio do arquivo esperado', logo.arquivo, 'img/logo.png');
   conferir('logo: a imagem tem largura de verdade', logo.largura > 0, true);
 
+  // --- a política de segurança continua no lugar? ---
+  // Nada além deste teste impede que alguém afrouxe o CSP sem perceber.
+  // O erro do 'frame-ancestors' só foi pego por acaso, pelo detector de
+  // erro de console; isto aqui é a trava de verdade.
+  const csp = await pagina.evaluate(() => {
+    const m = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+    return m ? m.getAttribute('content').replace(/\s+/g, ' ').trim() : null;
+  });
+  conferir('CSP: a politica esta presente na pagina', csp !== null, true);
+  conferir('CSP: script so do proprio site', /script-src [^;]*'self'/.test(csp || ''), true);
+  conferir('CSP: script NAO aceita codigo embutido (unsafe-inline)',
+    /script-src [^;]*unsafe-inline/.test(csp || ''), false);
+  conferir('CSP: script NAO aceita eval (unsafe-eval)',
+    /script-src [^;]*unsafe-eval/.test(csp || ''), false);
+  conferir('CSP: so fala com a API do Banco Central',
+    /connect-src https:\/\/api\.bcb\.gov\.br/.test(csp || ''), true);
+  conferir('CSP: default-src fechado', /default-src 'none'/.test(csp || ''), true);
+  // frame-ancestors e ignorado em <meta>; se alguem reintroduzir, o navegador
+  // volta a reclamar no console e o teste de "nenhum erro de JS" quebra
+  conferir('CSP: nao usa diretiva que <meta> ignora (frame-ancestors)',
+    /frame-ancestors/.test(csp || ''), false);
+
   // --- dados do escritório preenchidos pelo JS ---
   conferir('rodape: telefone preenchido pelo tabelas.js',
     (await pagina.textContent('[data-escritorio="telefoneFixo"]')).trim(), '(81) 3224-3472');

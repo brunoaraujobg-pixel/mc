@@ -130,10 +130,19 @@ function renderizarResultadoCorrecao(r, cfg, origem, aviso) {
     html += '<div style="overflow-x:auto"><table class="tabela"><thead><tr><th>Mês</th><th>' +
             cfg.nome + '</th></tr></thead><tbody>';
     for (var i = 0; i < r.taxas.length; i++) {
-      // a data vem da resposta do Banco Central: é conteúdo externo, vai escapado
-      var d = escaparHtml(r.taxas[i].data).split('/');
-      html += '<tr><td>' + (d.length === 3 ? d[1] + '/' + d[2] : escaparHtml(r.taxas[i].data)) + '</td><td>' +
-              r.taxas[i].valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) +
+      /* A data vem da resposta do Banco Central — conteúdo externo, vai escapado.
+         Separa PRIMEIRO e escapa depois: escapar antes funcionaria hoje por
+         sorte, mas quebraria no dia em que alguém acrescentasse a barra (/)
+         à lista de caracteres escapados, que é uma adição comum.
+         Já o valor não precisa de escape porque nunca é texto: o
+         calculo-correcao.js converte com Number() e descarta o que não vira
+         número, então aqui é sempre um número. */
+      var d = String(r.taxas[i].data).split('/');
+      var rotuloMes = (d.length === 3)
+        ? escaparHtml(d[1]) + '/' + escaparHtml(d[2])
+        : escaparHtml(r.taxas[i].data);
+      html += '<tr><td>' + rotuloMes + '</td><td>' +
+              Number(r.taxas[i].valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) +
               '%</td></tr>';
     }
     html += '</tbody></table></div>';

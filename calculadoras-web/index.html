@@ -5,17 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <!-- Política de segurança de conteúdo.
-     Trava a página no essencial: só carrega script, estilo e imagem dela
-     mesma, e só consegue falar com a API do Banco Central. Se um dia alguém
-     conseguir injetar um <script> nesta página, ele não executa; e a página
+     Trava a página no essencial: só carrega script, estilo e imagem do
+     próprio site, e só consegue falar com a API do Banco Central. Se um dia
+     alguém conseguir injetar código nesta página, ele não executa; e a página
      não consegue mandar dado nenhum para outro servidor.
-     Se você acrescentar alguma biblioteca externa ou outra API, precisa
-     liberar o endereço aqui, senão o navegador bloqueia em silêncio. -->
+
+     ATENÇÃO 1 — Se você acrescentar biblioteca externa (Google Fonts,
+     Analytics, um chat) ou outra API, precisa liberar o endereço aqui,
+     senão o navegador bloqueia EM SILÊNCIO e a página para de funcionar
+     sem dizer por quê.
+
+     ATENÇÃO 2 — O 'self' vale para o SITE INTEIRO (mesmo endereço), não
+     apenas para esta pasta.
+
+     ATENÇÃO 3 — O 'file:' abaixo existe só para o uso local, quando você
+     abre o index.html com dois cliques. Alguns navegadores (o Firefox, por
+     exemplo) tratam arquivo local como origem anônima, e sem o 'file:' a
+     página abriria sem estilo e com os formulários mortos, sem mensagem de
+     erro nenhuma. No site publicado o 'file:' não permite nada, porque
+     nenhuma página servida por HTTPS carrega arquivo local. -->
 <meta http-equiv="Content-Security-Policy" content="
   default-src 'none';
-  script-src 'self';
-  style-src 'self' 'unsafe-inline';
-  img-src 'self' data:;
+  script-src 'self' file:;
+  style-src 'self' file: 'unsafe-inline';
+  img-src 'self' file: data:;
   connect-src https://api.bcb.gov.br;
   form-action 'none';
   base-uri 'none'">
