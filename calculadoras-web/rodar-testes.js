@@ -11,9 +11,18 @@ var vm = require('vm');
 var resultados = rodarTestes();
 var falhas = 0;
 
+/* Número no padrão brasileiro: ponto no milhar, vírgula no decimal.
+   Quem lê este relatório é contador — 2.751,40 é o que ele reconhece,
+   não 2751.40. */
+function numeroBR(v) {
+  return Number(v).toLocaleString('pt-BR', {
+    minimumFractionDigits: 2, maximumFractionDigits: 2
+  });
+}
+
 resultados.forEach(function (t) {
-  var esperado = t.texto ? t.esperado : Number(t.esperado).toFixed(2);
-  var obtido = t.texto ? t.obtido : Number(t.obtido).toFixed(2);
+  var esperado = t.texto ? t.esperado : numeroBR(t.esperado);
+  var obtido = t.texto ? t.obtido : numeroBR(t.obtido);
   if (!t.ok) falhas++;
   console.log((t.ok ? '  OK   ' : '  FALHA') + ' | ' + t.nome +
               '  ->  esperado: ' + esperado + ' | obtido: ' + obtido);
