@@ -99,8 +99,10 @@ diferente do esperado.
 - Registrar histórico dos editais já avisados (hoje, se rodar duas
   vezes no mesmo dia, pode repetir o e-mail).
 - Rodar para mais de uma empresa por vez, não só a ativa.
-- Cruzar com consulta de preço (próximo módulo) pra já vir com uma
-  faixa de valor sugerida junto do alerta.
-- Melhorar o casamento de palavra-chave (hoje é substring simples —
-  poderia usar também o CATMAT/CATSER dos itens da compra, quando o
-  PNCP trouxer isso, em vez de só o texto livre do objeto).
+- Ligar no [`consulta-preco/`](../consulta-preco/): falta o PNCP trazer
+  o código CATMAT/CATSER de cada item da compra (hoje só temos o texto
+  livre do objeto) pra poder consultar o preço automaticamente e já
+  incluir a faixa de valor sugerida junto do alerta.
+- Melhorar o casamento de palavra-chave (hoje é substring simples).
+- Mandar por WhatsApp também (ver [`notificar-whatsapp/`](../notificar-whatsapp/)),
+  não só e-mail.

@@ -29,9 +29,10 @@ Pensado pra crescer por módulos, cada um numa subpasta.
   assessoria/contador com vários clientes. Decisão em aberto: assinar e
   revender esse serviço em vez de construir do zero (ver conta de
   precificação feita — calculadora publicada na conversa).
-- **Consulta de preço** — futuro. Cruzar item da licitação com
-  referência oficial (ex: Painel de Preços do governo) pra ajudar a
-  decidir o valor a ofertar.
+- [`consulta-preco/`](consulta-preco/) — **pronto (V3)**. Dado o código
+  CATMAT/CATSER de um item, busca no Compras.gov.br (API oficial) o
+  histórico de preços praticados e resume menor/média/mediana/maior
+  pra ajudar a decidir o valor a ofertar.
 
 ## Convenção
 

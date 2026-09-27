@@ -2,9 +2,9 @@
 
 Script em Python que cadastra as empresas do escritório pelo CNPJ,
 busca automaticamente o CNAE (principal e secundários) e guarda tudo num
-banco local. Serve de base para os próximos módulos de licitação
-(alerta de edital e consulta de preço), que ainda não existem — este
-script só cuida do cadastro.
+banco local. Serve de base para os outros módulos do Inova v2 (alerta
+de edital, WhatsApp e consulta de preço) — este script só cuida do
+cadastro.
 
 ## O que ele faz
 
@@ -84,9 +84,8 @@ campo tiver mudado na API, me avise o erro exato que aparecer.
   [`alerta-editais/`](../alerta-editais/).
 - ~~Alerta por WhatsApp~~ — pronto, ver
   [`notificar-whatsapp/`](../notificar-whatsapp/).
-- Módulo de **consulta de preço**: cruzar o item da licitação com
-  referência de preço (ex: Painel de Preços do governo) pra ajudar a
-  decidir o valor a ofertar.
+- ~~Módulo de consulta de preço~~ — pronto, ver
+  [`consulta-preco/`](../consulta-preco/).
 - Trocar a tela de texto por uma interface mais simples (web local ou
   desktop), se o cadastro por menu ficar incômodo no dia a dia.
 - Se o volume de empresas crescer muito, avaliar migrar a consulta de
