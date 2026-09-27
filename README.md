@@ -15,6 +15,6 @@ Cada pasta na raiz é um projeto independente, com seu próprio `README.md`.
   do Piauí (Decreto 21.866/2023) a partir das fontes oficiais da SEFAZ.
 - [`inova-v2/`](inova-v2/) — sistema próprio de licitações, separado do
   Inova original (que continua intocado): cadastro de empresas com CNAE
-  automático e alerta de edital por e-mail (via PNCP) já prontos; robô
-  de lances/precificação e consulta de preço avaliados, ainda não
-  construídos.
+  automático, alerta de edital por e-mail (via PNCP) e notificação por
+  WhatsApp já prontos; robô de lances/precificação e consulta de preço
+  avaliados, ainda não construídos.

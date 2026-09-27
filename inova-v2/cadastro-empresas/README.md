@@ -15,10 +15,20 @@ script só cuida do cadastro.
    secundários).
 3. Mostra o que encontrou e permite **acrescentar CNAE manualmente**
    (código + descrição), caso falte algum ou a consulta falhe.
-4. Salva tudo num banco SQLite local (`empresas.db`, criado na primeira
+4. Pergunta o e-mail e o telefone (com DDD) da empresa, pra saber pra
+   quem mandar os alertas — por e-mail e por WhatsApp (módulo
+   [`notificar-whatsapp`](../notificar-whatsapp/)). Os dois são
+   opcionais (Enter pula) e podem ser cadastrados/editados depois pela
+   opção **5** do menu.
+5. Salva tudo num banco SQLite local (`empresas.db`, criado na primeira
    vez que você roda o script — não fica no Git, veja abaixo).
-5. Deixa marcar qual empresa está **ativa** — essa é a que os módulos
-   futuros (busca de licitação, sugestão de preço) vão usar.
+6. Deixa marcar qual empresa está **ativa** — essa é a que os módulos
+   futuros (alerta de edital, WhatsApp, sugestão de preço) usam.
+
+Se você já tinha uma `empresas.db` de uma versão anterior (sem e-mail
+e telefone), não tem problema: o script acrescenta essas colunas
+sozinho na primeira vez que você abrir, sem apagar nada do que já
+estava cadastrado.
 
 Nenhum dado é enviado pra fora além da própria consulta do CNPJ na
 BrasilAPI. Nada aqui altera o sistema Inova ou qualquer outro projeto
@@ -53,7 +63,8 @@ reescrever o resto.
    - **1** cadastra uma empresa nova pelo CNPJ.
    - **2** lista as empresas já cadastradas.
    - **3** escolhe qual fica ativa.
-   - **4** mostra os CNAEs da empresa ativa.
+   - **4** mostra e-mail, telefone e CNAEs da empresa ativa.
+   - **5** edita e-mail/telefone de uma empresa já cadastrada.
 
 ## ⚠️ Pendência de verificação
 
@@ -69,9 +80,10 @@ campo tiver mudado na API, me avise o erro exato que aparecer.
 
 ## Próximos passos (evolução futura)
 
-- Módulo de **alerta de edital**: usar os CNAEs da empresa ativa pra
-  buscar licitações abertas (fonte candidata: PNCP, que tem API pública
-  oficial e gratuita) e disparar e-mail.
+- ~~Módulo de alerta de edital~~ — pronto, ver
+  [`alerta-editais/`](../alerta-editais/).
+- ~~Alerta por WhatsApp~~ — pronto, ver
+  [`notificar-whatsapp/`](../notificar-whatsapp/).
 - Módulo de **consulta de preço**: cruzar o item da licitação com
   referência de preço (ex: Painel de Preços do governo) pra ajudar a
   decidir o valor a ofertar.

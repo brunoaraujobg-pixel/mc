@@ -1,11 +1,12 @@
 """
-Cadastro de empresas para o modulo de licitacoes.
+Cadastro de empresas do Inova v2.
 
 Voce digita o CNPJ, o script consulta a BrasilAPI (dados abertos da
 Receita Federal) para buscar razao social e CNAEs automaticamente, salva
 tudo num banco local (SQLite) e deixa marcar qual empresa fica "ativa" -
-essa selecao e a base para os proximos modulos (alerta de edital e
-consulta de preco por CNAE), que ainda nao existem.
+essa selecao e a base para os modulos de alerta (e-mail e WhatsApp) e
+consulta de preco. Tambem guarda e-mail e telefone (WhatsApp) de cada
+empresa, pra esses alertas saberem pra quem mandar.
 """
 import re
 import sqlite3
@@ -30,6 +31,8 @@ def conectar():
             nome_fantasia TEXT,
             municipio TEXT,
             uf TEXT,
+            email TEXT,
+            telefone TEXT,
             ativa INTEGER NOT NULL DEFAULT 0,
             criado_em TEXT DEFAULT CURRENT_TIMESTAMP
         )
@@ -47,11 +50,27 @@ def conectar():
         )
         """
     )
+    migrar_esquema(con)
     return con
+
+
+def migrar_esquema(con):
+    """Empresas.db criado antes do campo email/telefone existir ainda funciona -
+    isso acrescenta as colunas que faltarem, sem apagar nada que ja tem."""
+    colunas = {linha[1] for linha in con.execute("PRAGMA table_info(empresas)")}
+    if "email" not in colunas:
+        con.execute("ALTER TABLE empresas ADD COLUMN email TEXT")
+    if "telefone" not in colunas:
+        con.execute("ALTER TABLE empresas ADD COLUMN telefone TEXT")
+    con.commit()
 
 
 def limpar_cnpj(cnpj):
     return re.sub(r"\D", "", cnpj)
+
+
+def limpar_telefone(telefone):
+    return re.sub(r"\D", "", telefone)
 
 
 def consultar_cnpj(cnpj):
@@ -128,14 +147,21 @@ def cadastrar_empresa(con):
 
     perguntar_cnaes_manuais(cnaes)
 
+    email = input("\nE-mail para receber alerta (Enter para pular): ").strip()
+    telefone_bruto = input("Telefone com DDD para receber por WhatsApp (Enter para pular): ").strip()
+    telefone = limpar_telefone(telefone_bruto)
+    if telefone and len(telefone) < 10:
+        print("Telefone parece incompleto (esperado DDD + numero, ex: 81999998888) - salvando assim mesmo.")
+
     confirmar = input("\nSalvar essa empresa? (S/n): ").strip().lower()
     if confirmar == "n":
         print("Cadastro cancelado.")
         return
 
     cur = con.execute(
-        "INSERT INTO empresas (cnpj, razao_social, nome_fantasia, municipio, uf) VALUES (?, ?, ?, ?, ?)",
-        (cnpj, razao_social, nome_fantasia, municipio, uf),
+        "INSERT INTO empresas (cnpj, razao_social, nome_fantasia, municipio, uf, email, telefone) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (cnpj, razao_social, nome_fantasia, municipio, uf, email, telefone),
     )
     empresa_id = cur.lastrowid
     for c in cnaes:
@@ -175,18 +201,51 @@ def selecionar_ativa(con):
 
 
 def ver_cnaes_ativa(con):
-    empresa = con.execute("SELECT id, razao_social FROM empresas WHERE ativa = 1").fetchone()
+    empresa = con.execute(
+        "SELECT id, razao_social, email, telefone FROM empresas WHERE ativa = 1"
+    ).fetchone()
     if not empresa:
         print("Nenhuma empresa esta marcada como ativa. Use a opcao 3 primeiro.")
         return
-    empresa_id, razao_social = empresa
-    print(f"\nCNAEs de {razao_social}:")
+    empresa_id, razao_social, email, telefone = empresa
+    print(f"\n{razao_social}")
+    print(f"  E-mail: {email or '(nao cadastrado)'}")
+    print(f"  Telefone/WhatsApp: {telefone or '(nao cadastrado)'}")
+    print("CNAEs:")
     cnaes = con.execute(
         "SELECT codigo, descricao, principal FROM cnaes WHERE empresa_id = ?", (empresa_id,)
     ).fetchall()
     for codigo, descricao, principal in cnaes:
         marca = " (principal)" if principal else ""
         print(f"  {codigo} - {descricao}{marca}")
+
+
+def editar_contato(con):
+    empresas = listar_empresas(con)
+    if not empresas:
+        return
+    ids_validos = {e[0] for e in empresas}
+    escolha = input("\nDigite o numero [id] da empresa pra editar o contato: ").strip()
+    if not escolha.isdigit() or int(escolha) not in ids_validos:
+        print("Numero invalido - use um dos ids mostrados entre [ ].")
+        return
+    empresa_id = int(escolha)
+    email_atual, telefone_atual = con.execute(
+        "SELECT email, telefone FROM empresas WHERE id = ?", (empresa_id,)
+    ).fetchone()
+    print(f"E-mail atual: {email_atual or '(vazio)'}")
+    print(f"Telefone atual: {telefone_atual or '(vazio)'}")
+    novo_email = input("Novo e-mail (Enter para manter o atual): ").strip()
+    novo_telefone_bruto = input("Novo telefone com DDD (Enter para manter o atual): ").strip()
+    if novo_email:
+        con.execute("UPDATE empresas SET email = ? WHERE id = ?", (novo_email, empresa_id))
+    if novo_telefone_bruto:
+        con.execute(
+            "UPDATE empresas SET telefone = ? WHERE id = ?",
+            (limpar_telefone(novo_telefone_bruto), empresa_id),
+        )
+    con.commit()
+    print("Contato atualizado.")
 
 
 def menu():
@@ -196,6 +255,7 @@ def menu():
         "2": ("Listar empresas cadastradas", listar_empresas),
         "3": ("Selecionar empresa ativa", selecionar_ativa),
         "4": ("Ver CNAEs da empresa ativa", ver_cnaes_ativa),
+        "5": ("Editar e-mail/telefone de uma empresa", editar_contato),
     }
     try:
         while True:

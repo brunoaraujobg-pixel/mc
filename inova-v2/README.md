@@ -12,11 +12,16 @@ Pensado pra crescer por módulos, cada um numa subpasta.
 ## Módulos
 
 - [`cadastro-empresas/`](cadastro-empresas/) — **pronto (V1)**. Cadastra
-  empresa pelo CNPJ, busca o CNAE automaticamente e marca qual empresa
-  está ativa. Base pros módulos abaixo.
+  empresa pelo CNPJ, busca o CNAE automaticamente, guarda e-mail e
+  telefone (WhatsApp) e marca qual empresa está ativa. Base pros
+  módulos abaixo.
 - [`alerta-editais/`](alerta-editais/) — **pronto (V2)**. Busca no PNCP
   (API oficial) os editais publicados nos últimos dias, compara com os
   CNAEs da empresa ativa e avisa por e-mail o que combinar.
+- [`notificar-whatsapp/`](notificar-whatsapp/) — **pronto**. Manda a
+  mesma notificação por WhatsApp (API oficial da Meta), usando o
+  telefone cadastrado. Exige configurar uma conta Meta Business antes
+  de funcionar de verdade — ver README do módulo.
 - **Robô de lances / precificação** — avaliado em conversa: já existem
   vários produtos maduros no mercado (ContrataX, Licitei, WaveCode,
   Lance Fácil, eLicitaDisputa) cobrando na faixa de R$70-400 por
