@@ -14,6 +14,6 @@ Cada pasta na raiz é um projeto independente, com seu próprio `README.md`.
   organiza os Regulamentos do ICMS de Pernambuco (Decreto 44.650/2017) e
   do Piauí (Decreto 21.866/2023) a partir das fontes oficiais da SEFAZ.
 - [`licitacoes/`](licitacoes/) — automações do fluxo de licitações, por
-  módulos (cadastro de empresas com CNAE automático já pronto; alerta de
-  edital, robô de lances/precificação e consulta de preço avaliados,
-  ainda não construídos).
+  módulos: cadastro de empresas com CNAE automático e alerta de edital
+  por e-mail (via PNCP) já prontos; robô de lances/precificação e
+  consulta de preço avaliados, ainda não construídos.

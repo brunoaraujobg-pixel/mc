@@ -9,9 +9,9 @@ de fora, intocado).
 - [`cadastro-empresas/`](cadastro-empresas/) — **pronto (V1)**. Cadastra
   empresa pelo CNPJ, busca o CNAE automaticamente e marca qual empresa
   está ativa. Base pros módulos abaixo.
-- **Alerta de edital por e-mail** — avaliado, ainda não construído.
-  Depende de decidir a fonte dos editais (PNCP tem API oficial; dá pra
-  usar os CNAEs da empresa ativa cadastrada acima como filtro).
+- [`alerta-editais/`](alerta-editais/) — **pronto (V2)**. Busca no PNCP
+  (API oficial) os editais publicados nos últimos dias, compara com os
+  CNAEs da empresa ativa e avisa por e-mail o que combinar.
 - **Robô de lances / precificação** — avaliado em conversa: já existem
   vários produtos maduros no mercado (ContrataX, Licitei, WaveCode,
   Lance Fácil, eLicitaDisputa) cobrando na faixa de R$70-400 por
