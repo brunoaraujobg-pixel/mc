@@ -1,5 +1,5 @@
 """
-Alerta de editais para a empresa ativa (modulo de licitacoes, V2).
+Alerta de editais para a empresa ativa (modulo do Inova v2).
 
 Le a empresa marcada como "ativa" pelo modulo cadastro-empresas (e os
 CNAEs dela), busca no PNCP (Portal Nacional de Contratacoes Publicas -
@@ -218,7 +218,7 @@ def main():
     if not encontrados:
         return
 
-    assunto = f"[Licitacoes] {len(encontrados)} edital(is) para {empresa['razao_social']}"
+    assunto = f"[Inova v2] {len(encontrados)} edital(is) para {empresa['razao_social']}"
     corpo = montar_corpo_email(empresa, encontrados)
 
     if modo_teste:

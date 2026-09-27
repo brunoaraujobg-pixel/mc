@@ -199,7 +199,7 @@ def menu():
     }
     try:
         while True:
-            print("\n=== Cadastro de Empresas - Licitacoes ===")
+            print("\n=== Cadastro de Empresas - Inova v2 ===")
             for chave, (rotulo, _) in acoes.items():
                 print(f"  {chave}. {rotulo}")
             print("  0. Sair")

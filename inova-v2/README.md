@@ -1,8 +1,13 @@
-# Licitações
+# Inova v2
 
-Automações para o fluxo de licitações do escritório — pensado pra crescer
-por módulos, cada um numa subpasta, sem depender do sistema Inova (fica
-de fora, intocado).
+Sistema próprio de automações do fluxo de licitações do escritório —
+**separado do Inova original**, que continua intocado (este projeto não
+lê nem escreve no banco de dados nem em nenhuma tela do Inova atual). O
+nome é porque a ideia nasceu de evoluir o que o Inova faz hoje (avisar
+data de licitação, ajudar a precificar), só que construído do zero,
+por fora do sistema existente.
+
+Pensado pra crescer por módulos, cada um numa subpasta.
 
 ## Módulos
 
