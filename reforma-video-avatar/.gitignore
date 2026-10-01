@@ -1,0 +1,9 @@
+# Nunca enviar chaves, voz, avatar ou vídeos para o GitHub
+.env
+entrada/
+saida/
+log.csv
+*.mp3
+*.wav
+*.mp4
+*.png
