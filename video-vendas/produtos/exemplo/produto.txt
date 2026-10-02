@@ -1,0 +1,11 @@
+# Modelo de cadastro. Copie esta pasta, troque o nome da pasta e preencha.
+# Coloque de 3 a 5 fotos (.jpg/.png) ou clipes (.mp4) na mesma pasta.
+# Use SOMENTE dados reais do anúncio. O programa não inventa nada.
+nome: Fone Bluetooth X
+preco: 89,90
+link: https://shopee.com.br/COLE-O-LINK-DO-ANUNCIO
+beneficio1: Bateria de 20 horas
+beneficio2: Acompanha estojo de carregamento
+beneficio3: Conexão Bluetooth 5.3
+# Escreva "sim" SÓ se as fotos/clipes são seus ou autorizados pelo fornecedor:
+midia_autorizada:
