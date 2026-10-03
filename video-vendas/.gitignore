@@ -1,0 +1,14 @@
+# Não subir para o GitHub: chave, resultados e seus produtos reais
+chave_anthropic.txt
+log.csv
+saida/*
+!saida/.gitkeep
+produtos/*
+!produtos/exemplo/
+produtos/exemplo/*
+!produtos/exemplo/produto.txt
+musicas/*
+!musicas/LEIA-ME.txt
+__pycache__/
+chave_shopee.txt
+fila/
