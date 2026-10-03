@@ -4,7 +4,11 @@
 - **V1 pronta** (PR #11): vídeo 9:16 + texto + ntfy + log. Falta testar no Windows
   com produto real, chave do Claude e ntfy.
 
-## Próximo projeto: V1.5 "Escolher produtos" (afiliado Shopee)
+## STATUS V1.5: código pronto, falta testar com a API real
+Implementado: `escolher_produtos.py`, `testar_shopee.py`, `--todos`. Testado só com respostas
+simuladas. Próximo passo no PC: `chave_shopee.txt` + `python testar_shopee.py` e ajustar campos.
+
+## Plano original da V1.5 "Escolher produtos" (afiliado Shopee)
 Decisões já tomadas:
 - Modelo: **afiliado** (Bruno já tem conta aprovada).
 - Nicho: **casa e festa** (material de festa e coisas de casa).

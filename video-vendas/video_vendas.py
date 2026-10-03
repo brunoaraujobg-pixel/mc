@@ -32,7 +32,7 @@ def escrever_postagem(arquivo, dados, link):
         encoding="utf-8")
 
 
-def principal(produto, config):
+def principal(produto, config, avisar=True):
     pasta_prod = RAIZ / config.get("pastas", "produtos") / produto
     pasta_saida = RAIZ / config.get("pastas", "saida") / produto
     pasta_mus = RAIZ / config.get("pastas", "musicas")
@@ -59,18 +59,43 @@ def principal(produto, config):
         raise ErroAgente("validar-texto", "Link ausente no texto final.", "Erro interno; avise o suporte.")
     etapa("texto", destino_txt.name)
 
-    notificar.enviar(config, "Vídeo pronto", f"{produto}: {destino_video.name} em saida/{produto}/",
-                     tags="white_check_mark")
+    if avisar:
+        notificar.enviar(config, "Vídeo pronto", f"{produto}: {destino_video.name} em saida/{produto}/",
+                         tags="white_check_mark")
     print(f"\nPRONTO! Veja a pasta: {pasta_saida}")
     return 0
+
+
+def rodar_todos(config):
+    """Processa todo produto que ainda não tem vídeo. Os que faltam mídia/'sim' ficam aguardando."""
+    pasta = RAIZ / config.get("pastas", "produtos")
+    saida = RAIZ / config.get("pastas", "saida")
+    prontos, aguardando, erros = [], [], []
+    for p in sorted(x for x in pasta.iterdir() if x.is_dir() and x.name != "exemplo"):
+        if any((saida / p.name).glob("video*.mp4")):
+            continue  # já feito
+        try:
+            principal(p.name, config, avisar=False)
+            prontos.append(p.name)
+        except ErroAgente as e:
+            log.registrar(p.name, e.etapa, "ERRO " + e.mensagem)
+            (aguardando if e.etapa == "validar" else erros).append(p.name)
+            print(f"  [{p.name}] {e.etapa}: {e.mensagem}")
+    resumo = f"{len(prontos)} vídeos prontos, {len(aguardando)} aguardando mídia, {len(erros)} com erro"
+    print("\n" + resumo)
+    notificar.enviar(config, "Vídeo Vendas: lote concluído", resumo, prioridade=4 if erros else 3,
+                     tags="warning" if erros else "white_check_mark")
+    return 1 if erros else 0
 
 
 def main():
     config = configparser.ConfigParser()
     config.read(RAIZ / "config.ini", encoding="utf-8")
+    if len(sys.argv) == 2 and sys.argv[1] == "--todos":
+        return rodar_todos(config)
     if len(sys.argv) != 2:
         pasta = RAIZ / config.get("pastas", "produtos")
-        print("Uso: python video_vendas.py <pasta-do-produto>\nProdutos disponíveis:")
+        print("Uso: python video_vendas.py <pasta-do-produto>   ou   python video_vendas.py --todos\nProdutos disponíveis:")
         for p in sorted(pasta.iterdir()) if pasta.exists() else []:
             if p.is_dir():
                 print("  -", p.name)

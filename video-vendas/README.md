@@ -57,6 +57,32 @@ PRONTO! Veja a pasta: ...\saida\fone-x
 ```
 Abra `saida\fone-x\postagem.txt` e copie o bloco "TEXTO PRONTO PARA COLAR".
 
+## Escolher produtos mais vendidos (afiliado Shopee) - V1.5
+
+Para você que já é afiliado. O programa pergunta à API oficial de afiliados da
+Shopee quais produtos de **casa e festa** mais vendem, filtra e pontua, e cria
+as pastas em `produtos/` já com nome, preço, **seu link de afiliado** e fatos
+reais (vendas, nota, loja).
+
+**Passo a passo (no PC):**
+1. No painel de afiliados (affiliate.shopee.com.br) abra **Open API** e copie o
+   **App ID** e o **Secret**. Crie `chave_shopee.txt` nesta pasta: linha 1 = App ID,
+   linha 2 = Secret. (Não vai para o GitHub. Nunca cole o Secret em chats.)
+2. Teste a conexão: `python testar_shopee.py`. Deve mostrar "OK! A Shopee devolveu...".
+   **Se mostrar erro, copie a mensagem e me envie**: o código foi escrito sem acesso à
+   documentação oficial e pode precisar de um pequeno ajuste de campo.
+3. Escolher: `python escolher_produtos.py` (cria até 5 produtos novos, filtros no
+   `config.ini` > `[shopee]`). Você recebe um aviso no celular.
+4. **Única parada obrigatória:** em cada pasta nova, coloque 3 a 5 fotos/clipes
+   **seus ou autorizados** e escreva `midia_autorizada: sim`. O programa NÃO baixa
+   as imagens da Shopee (mídia de terceiros só com autorização).
+5. Gerar tudo de uma vez: `python video_vendas.py --todos`. Faz os vídeos de todos os
+   produtos que já têm mídia e `sim`, e avisa quantos ficaram aguardando mídia.
+6. Poste manualmente usando o `postagem.txt`. **Confira o preço no anúncio antes de postar.**
+
+Pontuação = vendas x (preço x comissão). Produtos já escolhidos não se repetem
+(`fila/vistos.txt`); o ranking do dia fica em `fila/ranking_AAAA-MM-DD.csv`.
+
 ## O que o programa confere
 
 - Pasta existe, 3 a 5 mídias, cadastro completo, `midia_autorizada: sim` (senão **para**).

@@ -10,3 +10,5 @@ produtos/exemplo/*
 musicas/*
 !musicas/LEIA-ME.txt
 __pycache__/
+chave_shopee.txt
+fila/
