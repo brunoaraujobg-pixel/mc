@@ -1,2 +1,10 @@
 __pycache__/
 *.pyc
+
+# Segredos e dados de clientes (nunca subir para o GitHub)
+.env
+*.pfx
+*.p12
+*.pem
+*.key
+*.db

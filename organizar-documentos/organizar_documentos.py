@@ -15,6 +15,7 @@ NÃO EXCLUI NADA. Só move de lugar dentro da própria pasta "documentos".
 
 import os
 import shutil
+import sys
 from datetime import datetime
 
 # ============================================================
@@ -35,6 +36,20 @@ CATEGORIAS = {
 }
 
 PASTA_OUTROS = "outros_classificar"
+NOME_LOG = "log_organizacao.txt"
+
+# Para só VER o que seria feito, sem mover nada, rode:
+#   python organizar_documentos.py --simular
+SIMULAR = "--simular" in sys.argv
+
+
+def deve_ignorar(nome_arquivo):
+    """Não mexe no próprio log nem em arquivos temporários do Office/Windows."""
+    return (
+        nome_arquivo == NOME_LOG
+        or nome_arquivo.startswith("~$")
+        or nome_arquivo.lower() in ("desktop.ini", "thumbs.db")
+    )
 
 
 def escolher_categoria(nome_arquivo):
@@ -75,23 +90,30 @@ def main():
         caminho_completo = os.path.join(PASTA_DOCUMENTOS, nome_arquivo)
 
         # Pula subpastas (só organiza arquivos soltos na raiz de "documentos")
-        if os.path.isdir(caminho_completo):
+        if os.path.isdir(caminho_completo) or deve_ignorar(nome_arquivo):
             continue
 
         categoria = escolher_categoria(nome_arquivo)
         pasta_destino = os.path.join(PASTA_DOCUMENTOS, categoria)
-        destino_final = mover_sem_sobrescrever(caminho_completo, pasta_destino)
-
-        linha = f"{nome_arquivo}  ->  {categoria}/{os.path.basename(destino_final)}"
+        if SIMULAR:
+            linha = f"[SIMULAÇÃO] {nome_arquivo}  ->  {categoria}/"
+        else:
+            destino_final = mover_sem_sobrescrever(caminho_completo, pasta_destino)
+            linha = f"{nome_arquivo}  ->  {categoria}/{os.path.basename(destino_final)}"
         print(linha)
         log_linhas.append(linha)
         total += 1
 
     log_linhas.append(f"\nTotal de arquivos organizados: {total}")
 
-    caminho_log = os.path.join(PASTA_DOCUMENTOS, "log_organizacao.txt")
-    with open(caminho_log, "w", encoding="utf-8") as f:
-        f.write("\n".join(log_linhas))
+    if SIMULAR:
+        print(f"\nSIMULAÇÃO: {total} arquivo(s) seriam movidos. Nada foi alterado.")
+        return
+
+    caminho_log = os.path.join(PASTA_DOCUMENTOS, NOME_LOG)
+    # "a" = acrescenta ao log existente, para não perder o histórico das execuções anteriores
+    with open(caminho_log, "a", encoding="utf-8") as f:
+        f.write("\n".join(log_linhas) + "\n\n")
 
     print(f"\nConcluído! {total} arquivo(s) organizado(s).")
     print(f"Log salvo em: {caminho_log}")

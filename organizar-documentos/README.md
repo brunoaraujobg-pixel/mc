@@ -18,6 +18,9 @@ eSocial/Folha, Federal), com base em palavras-chave no nome do arquivo.
    destino, o script acrescenta um número ao final (`_1`, `_2`, ...).
 7. Não mexe em subpastas já existentes — só organiza arquivos soltos na raiz.
 
+8. Ignora o próprio log e arquivos temporários (`~$...`, `desktop.ini`,
+   `Thumbs.db`) e **acrescenta** cada execução ao log, sem apagar o histórico.
+
 Nada é excluído em nenhuma etapa.
 
 ## Como usar
@@ -33,7 +36,9 @@ Nada é excluído em nenhuma etapa.
    ```
    python organizar_documentos.py
    ```
-4. Acompanhe a saída no terminal e revise `outros_classificar` e o
+4. Dica: antes de mover de verdade, rode `python organizar_documentos.py --simular`
+   — ele só mostra o que seria feito, sem mover nada.
+5. Acompanhe a saída no terminal e revise `outros_classificar` e o
    `log_organizacao.txt` gerados dentro da pasta `documentos`.
 
 ## Ajustar as categorias
