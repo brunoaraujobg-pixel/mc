@@ -1,0 +1,16 @@
+# Cada bloco separado por linha em branco = uma cena.
+# Linha "IMAGEM:" = pedido de imagem (opcional). Sem ela, vira slide de texto.
+# Linha "TITULO:" = texto grande do slide (opcional).
+
+TITULO: 3 erros que fazem o MEI pagar imposto a mais
+IMAGEM: small business owner at desk with calculator, flat illustration, blue tones
+Você é MEI e acha que paga o imposto certo? Muita gente paga mais do que deveria.
+
+TITULO: Erro 1: passar do limite de faturamento
+O limite do MEI é de oitenta e um mil reais por ano. Passou disso, o imposto muda.
+
+TITULO: Erro 2: esquecer a guia mensal
+O DAS vence todo dia vinte. Atrasou, vem multa e juros.
+
+TITULO: Erro 3: não declarar o anual
+A declaração anual do MEI é obrigatória. Se esquecer, tem multa.
