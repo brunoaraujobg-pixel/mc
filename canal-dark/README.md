@@ -3,6 +3,12 @@
 Transforma um **roteiro de texto** em um **vídeo .mp4** (voz + imagens + zoom suave),
 sem pagar nenhuma ferramenta.
 
+## Contexto e objetivo (decisão do Bruno)
+- **Objetivo:** criar uma fonte de **renda fora do escritório** com um canal dark.
+- **Não há dívida.** O ponto é o medo de gastar e não ter retorno. Por isso a versão 1 usa só ferramentas gratuitas.
+- **Regra de investimento:** só gastar dinheiro depois que o teste de 30 dias mostrar sinal de retorno (ver "Regras do canal").
+- Gastos futuros possíveis, um de cada vez e só se o canal pegar: voz melhor, banco de imagens/vídeos, edição.
+
 ## O que usa (tudo grátis)
 | Etapa | Ferramenta | Observação |
 |---|---|---|
