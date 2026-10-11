@@ -13,3 +13,5 @@ Cada pasta na raiz é um projeto independente, com seu próprio `README.md`.
 - [`download-ricms-pe-pi/`](download-ricms-pe-pi/) — baixa, valida e
   organiza os Regulamentos do ICMS de Pernambuco (Decreto 44.650/2017) e
   do Piauí (Decreto 21.866/2023) a partir das fontes oficiais da SEFAZ.
+- [`baixar-videos/`](baixar-videos/) — baixa vídeos de links (Instagram e
+  outros) com yt-dlp, só para estudo e uso pessoal, salvos apenas no PC.
