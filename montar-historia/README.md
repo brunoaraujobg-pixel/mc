@@ -48,6 +48,18 @@ CENA | 04_raichu.mp4 | SOM: raio.mp3@1.5 | SOM: decolagem.mp3@3.5
 - Linhas com `#` são comentários.
 - Use o **mesmo formato** (vertical/horizontal) ao gerar as cenas; se for diferente, o programa corta as bordas.
 
+## Ouvir as vozes antes de montar
+Quer testar o texto e escolher a voz sem montar o vídeo inteiro?
+```
+python ouvir_voz.py "Maria e suas amigas caminhavam alegres pela floresta."
+python ouvir_voz.py exemplos/historia.txt          (usa a 1ª FALA do arquivo)
+python ouvir_voz.py "Seu texto" --velocidade -10   (10% mais devagar; +10 = mais rápido)
+```
+Ele gera o mesmo texto com as 3 vozes (Francisca, Antonio, Thalita) em `saida/teste_voz/`,
+**toca uma depois da outra** (diz o nome de cada uma na tela) e depois **abre a pasta**.
+Para só gerar, sem tocar, acrescente `--mudo`. O som usa o `ffplay`, que já vem com o FFmpeg. Depois, coloque a voz escolhida na linha `VOZ:` do arquivo
+da história (ex.: `VOZ: pt-BR-AntonioNeural`). Precisa de internet.
+
 ## Regras de proteção
 - Antes de começar, confere se **todas as cenas existem**; se faltar alguma, lista e para.
 - Som ou música que não for encontrado: **avisa e continua** sem ele.
