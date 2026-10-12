@@ -87,7 +87,8 @@ O padrão (`MOTOR_VOZ: edge`) usa a voz da Microsoft e **precisa de internet**. 
 
 ## Miniatura automática
 Com a linha `TITULO_MINIATURA:` no arquivo da história, o programa cria uma `historia_miniatura.jpg`
-ao lado do vídeo: escolhe sozinho o **quadro mais nítido e colorido**, escurece a parte de baixo e escreve o
+ao lado do vídeo: escolhe sozinho o **quadro mais nítido e colorido das cenas originais** (assim a legenda
+gravada no vídeo não aparece na miniatura), escurece a parte de baixo e escreve o
 título grande com contorno. Palavras entre `*asteriscos*` ficam em **amarelo**.
 
 Também funciona em qualquer vídeo, sem montar nada:
@@ -102,6 +103,8 @@ python miniatura.py video.mp4 "Título" --quadro 12         (usa o quadro do seg
 - Dica: títulos curtos (3 a 6 palavras) funcionam melhor. O programa reduz a letra se o título for longo.
 - A fonte usada é a Impact (ou Arial Negrito) do Windows; se não achar, usa outra.
 - O quadro escolhido é automático e pode não ser o melhor: use `--quadro` para escolher o segundo.
+- Rodando `miniatura.py` direto no vídeo final (com legenda gravada), a legenda pode aparecer no quadro:
+  nesse caso use `--quadro` com um segundo sem legenda.
 
 ## Regras de proteção
 - Antes de começar, confere se **todas as cenas existem**; se faltar alguma, lista e para.

@@ -55,18 +55,24 @@ def nota(img):
     return bordas + cor + escuro_demais
 
 
-def melhor_quadro(video, pasta, n=12):
-    total = duracao(video)
-    melhor, melhor_nota = None, None
-    for i in range(n):
-        seg = total * (0.08 + 0.84 * i / max(1, n - 1))   # ignora começo e fim (fades)
-        arq = pasta / f"_q{i:02}.jpg"
-        extrair_quadro(video, seg, arq)
-        img = Image.open(arq)
-        v = nota(img)
-        if melhor_nota is None or v > melhor_nota:
-            melhor, melhor_nota = img.copy(), v
-        arq.unlink()
+def melhor_quadro(videos, pasta, n=12):
+    """Escolhe o melhor quadro entre ~n amostras espalhadas pelos vídeos."""
+    if isinstance(videos, (str, Path)):
+        videos = [videos]
+    por_video = max(2, n // len(videos))
+    melhor, melhor_nota, cont = None, None, 0
+    for video in videos:
+        total = duracao(video)
+        for i in range(por_video):
+            seg = total * (0.12 + 0.76 * i / max(1, por_video - 1))   # ignora começo e fim (fades)
+            arq = pasta / f"_q{cont:03}.jpg"
+            cont += 1
+            extrair_quadro(video, seg, arq)
+            img = Image.open(arq)
+            v = nota(img)
+            if melhor_nota is None or v > melhor_nota:
+                melhor, melhor_nota = img.copy(), v
+            arq.unlink()
     return melhor
 
 
@@ -174,12 +180,20 @@ def escrever_titulo(img, titulo, formato):
 
 
 def gerar_miniatura(video, titulo, destino, formato="auto", segundo=None):
-    """Cria a miniatura (.jpg). Devolve o caminho."""
-    video, destino = Path(video), Path(destino)
+    """Cria a miniatura (.jpg). Devolve o caminho.
+
+    `video` pode ser um vídeo ou uma LISTA de vídeos (ex.: as cenas originais, que não têm
+    legenda gravada). Com `segundo`, usa o quadro desse segundo do (primeiro) vídeo."""
+    destino = Path(destino)
+    if isinstance(video, (list, tuple)):
+        videos = [Path(v) for v in video]
+    else:
+        videos = [Path(video)]
+    video = videos[0]
     pasta = destino.parent
     pasta.mkdir(parents=True, exist_ok=True)
     if segundo is None:
-        quadro = melhor_quadro(video, pasta)
+        quadro = melhor_quadro(videos, pasta)
     else:
         tmp = pasta / "_quadro.jpg"
         extrair_quadro(video, segundo, tmp)
