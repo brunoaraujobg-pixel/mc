@@ -395,7 +395,8 @@ def main():
     if config["titulo_miniatura"]:
         try:
             from miniatura import gerar_miniatura
-            capa = gerar_miniatura(destino, config["titulo_miniatura"],
+            # usa as cenas ORIGINAIS (sem legenda gravada) para escolher o quadro
+            capa = gerar_miniatura([c["clip"] for c in cenas], config["titulo_miniatura"],
                                    destino.with_name(destino.stem + "_miniatura.jpg"),
                                    config["formato_miniatura"])
             log(f"Miniatura: {capa.name}")

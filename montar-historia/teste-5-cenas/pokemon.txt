@@ -1,0 +1,21 @@
+# ===== TESTE DE PONTA A PONTA: as 5 cenas =====
+# Rode (dentro da pasta montar-historia):   python montar_historia.py teste-5-cenas/pokemon.txt
+# Resultado: saida/pokemon/historia.mp4  e  saida/pokemon/historia_miniatura.jpg
+
+FORMATO: vertical
+MOTOR_VOZ: edge                # edge (online) | piper (offline) | windows (offline)
+VOZ: pt-BR-FranciscaNeural     # com piper use: pt_BR-faber-medium
+MUSICA: musica_heroica.mp3
+VOLUME_MUSICA: 0.15
+ABAIXAR_MUSICA: sim
+TRANSICAO: fade
+TRANSICAO_SEGUNDOS: 0.3
+LEGENDA: sim
+TITULO_MINIATURA: A *Emboscada* na Floresta
+
+# CENA | arquivo (pasta cenas/) | SOM: arquivo@segundo | FALA: texto narrado
+CENA | 01_caminhada.mp4 | SOM: passos_mata.mp3@0 | FALA: Maria e suas amigas caminhavam alegres pela floresta.
+CENA | 02_rummi_perdida.mp4 | SOM: suspense.mp3@0 | FALA: Mas, de repente, Rummi percebeu que estava sozinha.
+CENA | 03_emboscada.mp4 | SOM: suspense.mp3@0 | FALA: Do nada, a Equipe Rocket apareceu e cercou Rummi!
+CENA | 04_raichu.mp4 | SOM: raio.mp3@1.5 | SOM: decolagem.mp3@3.5 | FALA: Então surgiu o Raichu Samurai, e a Equipe Rocket voou longe!
+CENA | 05_reencontro.mp4 | FALA: Maria chegou a tempo. E o desafio estava só começando!
