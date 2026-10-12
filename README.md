@@ -17,3 +17,5 @@ Cada pasta na raiz é um projeto independente, com seu próprio `README.md`.
   YouTube e vídeo com legenda animada (e link opcional) para Instagram/Reels.
 - [`montar-historia/`](montar-historia/) — junta cenas de vídeo geradas por IA em
   uma história única, com efeitos sonoros, música, narração e legenda animada.
+- [`baixar-videos/`](baixar-videos/) — baixa vídeos de links (Instagram e
+  outros) com Instaloader, só para estudo e uso pessoal, salvos apenas no PC.
