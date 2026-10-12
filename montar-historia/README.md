@@ -27,7 +27,9 @@ cenas/ (seus .mp4)  +  sons/ (efeitos)  +  musicas/  +  historia.txt
    ```
    python montar_historia.py exemplos/historia.txt
    ```
-5. Pegue o vídeo em `saida/historia/historia.mp4`. Se rodar de novo, cria `historia_2.mp4` (não sobrescreve).
+5. Pegue o vídeo em `saida/historia/historia.mp4`. Se houver `FALA:`, sai também `historia.srt`, a **legenda para
+   o YouTube** (Studio > Legendas > Enviar arquivo). A legenda animada gravada no vídeo serve para o Instagram.
+   Os tempos do `.srt` acompanham as cenas e a voz; revise antes de subir, pois a divisão por palavra é aproximada. Se rodar de novo, cria `historia_2.mp4` (não sobrescreve).
 
 **O que deve aparecer:** `Cena 1/5 ... Juntando as cenas... PRONTO`. Ao terminar, o vídeo **abre sozinho**
 (para desligar, troque `ABRIR_AO_TERMINAR = True` por `False` no começo do `montar_historia.py`).

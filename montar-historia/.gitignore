@@ -6,3 +6,4 @@ saida/
 !sons/LEIA-ME.txt
 !musicas/LEIA-ME.txt
 vozes/
+__pycache__/
