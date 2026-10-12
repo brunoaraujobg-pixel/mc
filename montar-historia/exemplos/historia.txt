@@ -2,6 +2,9 @@
 FORMATO: vertical          # vertical (Reels/Shorts 1080x1920) ou horizontal (YouTube 1920x1080)
 MUSICA: musica_heroica.mp3 # música de fundo (pasta musicas/). Apague a linha para não usar
 VOLUME_MUSICA: 0.15        # 0.15 = baixa; 0.4 = média
+TRANSICAO: fade            # fade = entra e sai do preto entre as cenas; corte = corte seco
+TRANSICAO_SEGUNDOS: 0.3
+ABAIXAR_MUSICA: sim        # a música abaixa sozinha quando há narração
 LEGENDA: sim               # só aparece onde houver FALA
 VOZ: pt-BR-FranciscaNeural # alternativas: pt-BR-AntonioNeural, pt-BR-ThalitaNeural
 
