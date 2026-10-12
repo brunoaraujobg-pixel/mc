@@ -48,7 +48,8 @@ O Instagram **não permite link clicável na legenda do post**. Por isso o scrip
    ```
    python legendar_videos.py
    ```
-4. Pegue os resultados em `saida/`.
+4. Ao terminar, a pasta `saida/` **abre sozinha** com os resultados
+   (para desligar, troque `ABRIR_AO_TERMINAR = True` por `False` no `legendar_videos.py`).
 
 **O que deve aparecer:** mensagens como `Transcrevendo: video1.mp4` → `Gravando legenda animada` → `OK`.
 Na primeira execução ele baixa o modelo (~500 MB no `small`); depois não baixa mais.
