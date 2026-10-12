@@ -40,6 +40,8 @@ VOLUME_MUSICA: 0.15          # 0.15 = baixa
 TRANSICAO: fade              # fade = suave entre cenas; corte = corte seco (padrão)
 TRANSICAO_SEGUNDOS: 0.3
 ABAIXAR_MUSICA: sim          # música abaixa sozinha durante a narração (padrão: sim)
+TITULO_MINIATURA: O *SEGREDO* da floresta   # opcional: cria a miniatura (palavra entre *asteriscos* = amarelo)
+FORMATO_MINIATURA: auto      # auto | youtube (1280x720) | capa (1080x1920)
 LEGENDA: sim                 # legenda animada onde houver FALA
 MOTOR_VOZ: edge              # edge (online) | piper (offline) | windows (offline)
 VOZ: pt-BR-FranciscaNeural   # nome da voz; depende do motor (veja abaixo)
@@ -83,6 +85,24 @@ O padrão (`MOTOR_VOZ: edge`) usa a voz da Microsoft e **precisa de internet**. 
 - Se a voz falhar, a cena fica sem narração e o programa avisa. Ele não trava.
 - Os motores offline gravam `.wav`; o resto do programa funciona igual.
 
+## Miniatura automática
+Com a linha `TITULO_MINIATURA:` no arquivo da história, o programa cria uma `historia_miniatura.jpg`
+ao lado do vídeo: escolhe sozinho o **quadro mais nítido e colorido**, escurece a parte de baixo e escreve o
+título grande com contorno. Palavras entre `*asteriscos*` ficam em **amarelo**.
+
+Também funciona em qualquer vídeo, sem montar nada:
+```
+python miniatura.py saida/historia/historia.mp4 "O *SEGREDO* da floresta"
+python miniatura.py video.mp4 "Título" --formato youtube   (1280x720; vídeo vertical ganha fundo desfocado)
+python miniatura.py video.mp4 "Título" --formato capa      (1080x1920, capa de Reels/Shorts)
+python miniatura.py video.mp4 "Título" --quadro 12         (usa o quadro do segundo 12)
+```
+- Precisa do `Pillow` (`pip install -r requirements.txt`).
+- Nunca sobrescreve: se já existir, cria `_miniatura_2.jpg`.
+- Dica: títulos curtos (3 a 6 palavras) funcionam melhor. O programa reduz a letra se o título for longo.
+- A fonte usada é a Impact (ou Arial Negrito) do Windows; se não achar, usa outra.
+- O quadro escolhido é automático e pode não ser o melhor: use `--quadro` para escolher o segundo.
+
 ## Regras de proteção
 - Antes de começar, confere se **todas as cenas existem**; se faltar alguma, lista e para.
 - Som ou música que não for encontrado: **avisa e continua** sem ele.
@@ -110,6 +130,7 @@ desmonetização. Para gerar renda, prefira personagens originais.
 
 ## Evolução
 - **V2 (feita):** transição suave entre cenas e música que abaixa durante a fala.
-- **V2.1 (feita):** voz offline (Piper e Windows). **Próximo:** miniatura automática.
+- **V2.1 (feita):** voz offline (Piper e Windows). 
+- **V2.2 (feita):** miniatura automática.
 - **V3:** gerar as cenas automaticamente por API oficial de vídeo (Runway/Luma/Kling) a partir dos prompts.
 - **V4:** roteiro por IA e rotina de publicação (com aprovação humana).
