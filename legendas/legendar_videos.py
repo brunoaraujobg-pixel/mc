@@ -11,6 +11,7 @@ Vídeos que já têm resultado na SAIDA são pulados (sem duplicar).
 """
 
 import os
+import platform
 import subprocess
 import sys
 from datetime import datetime
@@ -40,6 +41,8 @@ TAMANHO_FONTE_PCT = 0.045          # tamanho da fonte = 4,5% da altura do vídeo
 POSICAO_VERTICAL_PCT = 0.72        # 72% da altura (de cima para baixo); fica acima da área
                                    # que o Instagram cobre com botões e descrição
 
+ABRIR_AO_TERMINAR = True           # abre a pasta de resultados sozinho (False = não abrir)
+
 EXTENSOES = {".mp4", ".mov", ".mkv", ".avi", ".m4v", ".webm"}
 
 # ======================================================================
@@ -50,6 +53,20 @@ def log(msg, arquivo_log):
     print(linha)
     with open(arquivo_log, "a", encoding="utf-8") as f:
         f.write(linha + "\n")
+
+
+def abrir(caminho):
+    """Abre a pasta no explorador do sistema. Nunca derruba o programa."""
+    try:
+        if platform.system() == "Windows":
+            os.startfile(str(caminho))
+        elif platform.system() == "Darwin":
+            subprocess.Popen(["open", str(caminho)])
+        else:
+            subprocess.Popen(["xdg-open", str(caminho)],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception as e:
+        print(f"(não consegui abrir automaticamente: {e})")
 
 
 def rodar(cmd, **kw):
@@ -265,6 +282,8 @@ def main():
             log(f"ERRO em {v.name}: {e}", arquivo_log)
 
     log("Fim.", arquivo_log)
+    if ABRIR_AO_TERMINAR:
+        abrir(SAIDA)
 
 
 if __name__ == "__main__":

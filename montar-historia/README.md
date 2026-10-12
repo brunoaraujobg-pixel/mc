@@ -29,7 +29,8 @@ cenas/ (seus .mp4)  +  sons/ (efeitos)  +  musicas/  +  historia.txt
    ```
 5. Pegue o vídeo em `saida/historia/historia.mp4`. Se rodar de novo, cria `historia_2.mp4` (não sobrescreve).
 
-**O que deve aparecer:** `Cena 1/5 ... Juntando as cenas... PRONTO`.
+**O que deve aparecer:** `Cena 1/5 ... Juntando as cenas... PRONTO`. Ao terminar, o vídeo **abre sozinho**
+(para desligar, troque `ABRIR_AO_TERMINAR = True` por `False` no começo do `montar_historia.py`).
 
 ## Formato do arquivo da história
 ```

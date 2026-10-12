@@ -9,6 +9,8 @@ Saída: saida/<nome-do-arquivo>/historia.mp4   (nunca sobrescreve: cria historia
 """
 
 import asyncio
+import os
+import platform
 import re
 import shutil
 import subprocess
@@ -18,6 +20,7 @@ from pathlib import Path
 
 BASE = Path(__file__).resolve().parent
 FPS = 30
+ABRIR_AO_TERMINAR = True     # abre o vídeo pronto sozinho (False = não abrir)
 COR_TEXTO = "FFFFFF"
 COR_DESTAQUE = "00D7FF"      # palavra falada (RRGGBB)
 PALAVRAS_POR_BLOCO = 3
@@ -45,6 +48,20 @@ def achar(nome, pasta):
         if cand.is_file():
             return cand.resolve()
     return None
+
+
+def abrir(caminho):
+    """Abre o arquivo/pasta no programa padrão do sistema. Nunca derruba o programa."""
+    try:
+        if platform.system() == "Windows":
+            os.startfile(str(caminho))
+        elif platform.system() == "Darwin":
+            subprocess.Popen(["open", str(caminho)])
+        else:
+            subprocess.Popen(["xdg-open", str(caminho)],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception as e:
+        print(f"   (não consegui abrir automaticamente: {e})")
 
 
 def proximo_nome(pasta, base, ext):
@@ -337,6 +354,8 @@ def main():
     for a in avisos:
         log("AVISO: " + a)
     log(f"PRONTO: {destino}  ({duracao(destino):.1f}s)")
+    if ABRIR_AO_TERMINAR:
+        abrir(destino)
 
 
 if __name__ == "__main__":
