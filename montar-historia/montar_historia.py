@@ -80,7 +80,8 @@ def ler_historia(caminho):
     """Retorna (config, cenas). Cena = {'arquivo', 'sons': [(nome, seg)], 'fala'}."""
     config = {"formato": "vertical", "musica": "", "volume_musica": 0.15,
               "legenda": True, "voz": "", "motor_voz": "edge",
-              "transicao": "corte", "transicao_segundos": 0.3, "abaixar_musica": True}
+              "transicao": "corte", "transicao_segundos": 0.3, "abaixar_musica": True,
+              "titulo_miniatura": "", "formato_miniatura": "auto"}
     cenas = []
     for n, bruta in enumerate(Path(caminho).read_text(encoding="utf-8-sig").splitlines(), 1):
         linha = bruta.split("#", 1)[0].strip()   # tira comentários
@@ -130,6 +131,12 @@ def ler_historia(caminho):
             config["transicao"] = valor.lower()
         elif chave == "transicao_segundos":
             config["transicao_segundos"] = float(valor.replace(",", "."))
+        elif chave == "titulo_miniatura":
+            config["titulo_miniatura"] = valor
+        elif chave == "formato_miniatura":
+            if valor.lower() not in ("auto", "youtube", "capa"):
+                raise ValueError(f"Linha {n}: FORMATO_MINIATURA deve ser auto, youtube ou capa")
+            config["formato_miniatura"] = valor.lower()
         elif chave == "abaixar_musica":
             config["abaixar_musica"] = valor.lower() in ("sim", "s", "true", "1")
         else:
@@ -385,6 +392,15 @@ def main():
         sys.exit(1)
 
     shutil.rmtree(temp, ignore_errors=True)
+    if config["titulo_miniatura"]:
+        try:
+            from miniatura import gerar_miniatura
+            capa = gerar_miniatura(destino, config["titulo_miniatura"],
+                                   destino.with_name(destino.stem + "_miniatura.jpg"),
+                                   config["formato_miniatura"])
+            log(f"Miniatura: {capa.name}")
+        except Exception as e:
+            avisos.append(f"miniatura não gerada ({type(e).__name__}: {e}). Falta: pip install Pillow?")
     for a in avisos:
         log("AVISO: " + a)
     log(f"PRONTO: {destino}  ({duracao(destino):.1f}s)")

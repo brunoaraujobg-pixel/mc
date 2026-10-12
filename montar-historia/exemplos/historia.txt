@@ -5,6 +5,7 @@ VOLUME_MUSICA: 0.15        # 0.15 = baixa; 0.4 = média
 TRANSICAO: fade            # fade = entra e sai do preto entre as cenas; corte = corte seco
 TRANSICAO_SEGUNDOS: 0.3
 ABAIXAR_MUSICA: sim        # a música abaixa sozinha quando há narração
+TITULO_MINIATURA: A *Emboscada* na Floresta   # opcional: gera a miniatura sozinha (*palavra* = amarelo)
 LEGENDA: sim               # só aparece onde houver FALA
 MOTOR_VOZ: edge            # edge (online) | piper (offline) | windows (offline)
 VOZ: pt-BR-FranciscaNeural # edge: pt-BR-AntonioNeural, pt-BR-ThalitaNeural | piper: pt_BR-faber-medium | windows: Maria
