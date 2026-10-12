@@ -1,0 +1,17 @@
+# ===== CONFIGURAÇÃO DA HISTÓRIA =====
+FORMATO: vertical          # vertical (Reels/Shorts 1080x1920) ou horizontal (YouTube 1920x1080)
+MUSICA: musica_heroica.mp3 # música de fundo (pasta musicas/). Apague a linha para não usar
+VOLUME_MUSICA: 0.15        # 0.15 = baixa; 0.4 = média
+LEGENDA: sim               # só aparece onde houver FALA
+VOZ: pt-BR-FranciscaNeural # alternativas: pt-BR-AntonioNeural, pt-BR-ThalitaNeural
+
+# ===== CENAS (na ordem do vídeo) =====
+# CENA | arquivo da cena (pasta cenas/) | SOM: arquivo@segundo | FALA: texto narrado
+# - SOM pode aparecer várias vezes na mesma cena. "@2" = toca aos 2 segundos (padrão @0).
+# - FALA é opcional. Escreva números por extenso ("oitenta e um mil").
+
+CENA | 01_caminhada.mp4 | SOM: passos_mata.mp3@0 | FALA: Maria e suas amigas caminhavam alegres pela floresta.
+CENA | 02_rummi_perdida.mp4 | SOM: suspense.mp3@0 | FALA: Mas, de repente, Rummi percebeu que estava sozinha.
+CENA | 03_emboscada.mp4 | SOM: suspense.mp3@0
+CENA | 04_raichu.mp4 | SOM: raio.mp3@1.5 | SOM: decolagem.mp3@3.5
+CENA | 05_reencontro.mp4 | FALA: Maria chegou a tempo. E o desafio estava só começando!
