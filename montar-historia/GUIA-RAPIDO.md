@@ -10,6 +10,7 @@ A partir das cenas de vídeo geradas por IA (Kling, Runway, Luma), ele cria:
 | `historia.mp4` | Vídeo final: cenas na ordem, efeitos, música que abaixa na fala, voz, legenda animada, transição suave. Serve para **Instagram/Reels** |
 | `historia.srt` | Legenda para enviar no **YouTube** (só se houver `FALA:`) |
 | `historia_miniatura.jpg` | Miniatura/capa com título (só se houver `TITULO_MINIATURA:`) |
+| `historia_publicacao.txt` | **Kit de publicação**: título, descrição, hashtags e passos para YouTube e Instagram (só se houver `TITULO_VIDEO:` ou `TITULO_MINIATURA:`) |
 | `log.txt` | Histórico e avisos |
 
 Tudo em `saida/<nome-do-arquivo-da-história>/`. Nunca sobrescreve: cria `historia_2.mp4` etc.
@@ -45,6 +46,8 @@ VOLUME_MUSICA: 0.15
 ABAIXAR_MUSICA: sim
 TRANSICAO: fade                    # fade | corte
 TITULO_MINIATURA: A *Emboscada* na Floresta   # *palavra* = amarelo
+TITULO_VIDEO: A Emboscada na Floresta | Maria e Rummi
+HASHTAGS: animacao, aventura, historia        # sem o símbolo #
 LEGENDA: sim
 
 CENA | 01_caminhada.mp4 | SOM: passos_mata.mp3@0 | FALA: Texto narrado
@@ -67,12 +70,14 @@ E, na pasta `legendas/`, legendas em lote para vídeos que você já tem (`.srt`
 ## Já confirmado no seu PC
 - [x] Voz em português (edge) e voz offline (Piper)
 - [x] Miniatura automática
+- [x] Teste de ponta a ponta com as 5 cenas de ensaio
+- [x] `historia.srt` (legenda do YouTube)
+- [x] `legendas/` (transcrição Whisper em lote)
 
 ## Ainda sem teste no seu PC
-- [ ] Teste de ponta a ponta com as 5 cenas (`teste-5-cenas/`): transição, música abaixando, legenda animada, efeitos nos tempos
-- [ ] Transcrição Whisper da pasta `legendas/`
-- [ ] `historia.srt` (novo)
+- [ ] Kit de publicação (`historia_publicacao.txt`)
 - [ ] Cenas reais do Kling/Runway/Luma
+- [ ] Sons e música reais de biblioteca livre
 
 ## Cuidados
 - Pokémon, Raichu e Equipe Rocket são da Nintendo/The Pokémon Company: uso pessoal costuma ser tranquilo; em canal **monetizado** há risco de bloqueio. Para gerar renda, prefira personagens originais.

@@ -43,6 +43,9 @@ TRANSICAO: fade              # fade = suave entre cenas; corte = corte seco (pad
 TRANSICAO_SEGUNDOS: 0.3
 ABAIXAR_MUSICA: sim          # música abaixa sozinha durante a narração (padrão: sim)
 TITULO_MINIATURA: O *SEGREDO* da floresta   # opcional: cria a miniatura (palavra entre *asteriscos* = amarelo)
+TITULO_VIDEO: O Segredo da Floresta | Maria e Rummi   # opcional: título para YouTube/Instagram (kit de publicação)
+HASHTAGS: animacao, aventura, historia   # opcional, SEM o símbolo #
+LINK: meusite.com.br/contato             # opcional
 FORMATO_MINIATURA: auto      # auto | youtube (1280x720) | capa (1080x1920)
 LEGENDA: sim                 # legenda animada onde houver FALA
 MOTOR_VOZ: edge              # edge (online) | piper (offline) | windows (offline)
@@ -107,6 +110,21 @@ python miniatura.py video.mp4 "Título" --quadro 12         (usa o quadro do seg
 - O quadro escolhido é automático e pode não ser o melhor: use `--quadro` para escolher o segundo.
 - Rodando `miniatura.py` direto no vídeo final (com legenda gravada), a legenda pode aparecer no quadro:
   nesse caso use `--quadro` com um segundo sem legenda.
+
+## Kit de publicação (YouTube + Instagram)
+Com `TITULO_VIDEO:` (ou `TITULO_MINIATURA:`) no arquivo da história, o programa cria `historia_publicacao.txt`
+ao lado do vídeo, pronto para copiar e colar:
+- **YouTube:** título (com contador de 100 caracteres), descrição, palavras-chave e passos de envio (inclui o `.srt`).
+- **Instagram:** legenda (limite de 2200 caracteres e 30 hashtags conferido), texto de gancho e passos.
+- **Checklist** antes de postar (assistir inteiro, revisar o `.srt`, sons livres, direitos de personagens).
+
+Linhas opcionais: `DESCRICAO:` (se vazia, usa as falas das cenas), `HASHTAGS:` (sem `#`, separadas por vírgula) e
+`LINK:` (no Instagram vira "Link na bio", pois o link da legenda não é clicável).
+Também funciona sem montar o vídeo: `python kit_publicacao.py teste-5-cenas/pokemon.txt`.
+
+Observações: o texto "Vídeo com imagens e voz criadas com inteligência artificial" entra na descrição do YouTube
+(edite se não for o seu caso). Regras do YouTube/Instagram (rótulo de IA, Shorts/Reels, limites) mudam: confira as
+páginas oficiais. O programa **não publica nada**.
 
 ## Regras de proteção
 - Antes de começar, confere se **todas as cenas existem**; se faltar alguma, lista e para.

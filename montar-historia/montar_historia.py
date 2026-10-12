@@ -81,7 +81,8 @@ def ler_historia(caminho):
     config = {"formato": "vertical", "musica": "", "volume_musica": 0.15,
               "legenda": True, "voz": "", "motor_voz": "edge",
               "transicao": "corte", "transicao_segundos": 0.3, "abaixar_musica": True,
-              "titulo_miniatura": "", "formato_miniatura": "auto"}
+              "titulo_miniatura": "", "formato_miniatura": "auto",
+              "titulo_video": "", "descricao": "", "hashtags": "", "link": ""}
     cenas = []
     for n, bruta in enumerate(Path(caminho).read_text(encoding="utf-8-sig").splitlines(), 1):
         linha = bruta.split("#", 1)[0].strip()   # tira comentários
@@ -131,6 +132,8 @@ def ler_historia(caminho):
             config["transicao"] = valor.lower()
         elif chave == "transicao_segundos":
             config["transicao_segundos"] = float(valor.replace(",", "."))
+        elif chave in ("titulo_video", "descricao", "hashtags", "link"):
+            config[chave] = valor
         elif chave == "titulo_miniatura":
             config["titulo_miniatura"] = valor
         elif chave == "formato_miniatura":
@@ -437,6 +440,13 @@ def main():
         srt = destino.with_suffix(".srt")
         if gerar_srt(trechos_srt, srt):
             log(f"Legenda do YouTube: {srt.name}")
+    if config["titulo_miniatura"] or config["titulo_video"]:
+        try:
+            from kit_publicacao import gerar_kit
+            kit = gerar_kit(config, cenas, destino.with_name(destino.stem + "_publicacao.txt"))
+            log(f"Kit de publicação: {kit.name}")
+        except Exception as e:
+            avisos.append(f"kit de publicação não gerado ({type(e).__name__}: {e})")
     if config["titulo_miniatura"]:
         try:
             from miniatura import gerar_miniatura

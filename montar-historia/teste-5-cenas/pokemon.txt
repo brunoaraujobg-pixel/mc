@@ -12,6 +12,10 @@ TRANSICAO: fade
 TRANSICAO_SEGUNDOS: 0.3
 LEGENDA: sim
 TITULO_MINIATURA: A *Emboscada* na Floresta
+TITULO_VIDEO: A Emboscada na Floresta | Maria, Rummi e o Raichu Samurai
+HASHTAGS: animacao, aventura, historia, anime, shorts
+# DESCRICAO: (opcional) se vazio, usa as falas das cenas
+# LINK: (opcional) ex.: meusite.com.br/contato
 
 # CENA | arquivo (pasta cenas/) | SOM: arquivo@segundo | FALA: texto narrado
 CENA | 01_caminhada.mp4 | SOM: passos_mata.mp3@0 | FALA: Maria e suas amigas caminhavam alegres pela floresta.
