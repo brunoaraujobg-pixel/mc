@@ -9,10 +9,15 @@ Uso:
   python ouvir_voz.py exemplos/historia.txt        (usa a 1ª FALA do arquivo da história)
   python ouvir_voz.py "Seu texto" --velocidade -10 (10% mais devagar; use +10 para mais rápido)
 
+Ao gerar, ele TOCA as vozes uma depois da outra (Francisca, Antonio, Thalita) e depois abre a pasta.
+Para só gerar sem tocar, use --mudo.
+
 Resultado: saida/teste_voz/voz_francisca.mp3, voz_antonio.mp3, voz_thalita.mp3
 """
 
 import asyncio
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -26,6 +31,16 @@ VOZES = {
     "thalita": "pt-BR-ThalitaNeural",
 }
 TEXTO_EXEMPLO = "Maria e suas amigas caminhavam alegres pela floresta, quando tudo mudou."
+
+
+def tocar(arquivo):
+    """Toca o áudio e espera terminar (usa o ffplay, que vem junto com o FFmpeg)."""
+    try:
+        subprocess.run(["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet", str(arquivo)],
+                       check=True)
+        return True
+    except Exception:
+        return False
 
 
 def escolher_texto(args):
@@ -55,6 +70,10 @@ def main():
             sys.exit(1)
         del args[i:i + 2]
 
+    mudo = "--mudo" in args
+    if mudo:
+        args.remove("--mudo")
+
     try:
         import edge_tts
     except ImportError:
@@ -82,6 +101,18 @@ def main():
         print("\nNenhuma voz foi gerada. Confira a internet e tente de novo.")
         sys.exit(1)
     print(f"\nPronto: {feitos} voz(es) em {SAIDA}")
+
+    if not mudo and shutil.which("ffplay"):
+        print("\nTocando uma depois da outra...")
+        for nome in VOZES:
+            arq = SAIDA / f"voz_{nome}.mp3"
+            if arq.is_file():
+                print(f"  ▶ {nome.capitalize()}")
+                if not tocar(arq):
+                    print("    (não consegui tocar; abra o arquivo pela pasta)")
+                    break
+    elif not mudo:
+        print("\n(ffplay não encontrado: abra os arquivos pela pasta. Ele vem com o FFmpeg.)")
     abrir(SAIDA)
 
 

@@ -55,8 +55,9 @@ python ouvir_voz.py "Maria e suas amigas caminhavam alegres pela floresta."
 python ouvir_voz.py exemplos/historia.txt          (usa a 1ª FALA do arquivo)
 python ouvir_voz.py "Seu texto" --velocidade -10   (10% mais devagar; +10 = mais rápido)
 ```
-Ele gera o mesmo texto com as 3 vozes (Francisca, Antonio, Thalita) em `saida/teste_voz/`
-e **abre a pasta** para você ouvir. Depois, coloque a voz escolhida na linha `VOZ:` do arquivo
+Ele gera o mesmo texto com as 3 vozes (Francisca, Antonio, Thalita) em `saida/teste_voz/`,
+**toca uma depois da outra** (diz o nome de cada uma na tela) e depois **abre a pasta**.
+Para só gerar, sem tocar, acrescente `--mudo`. O som usa o `ffplay`, que já vem com o FFmpeg. Depois, coloque a voz escolhida na linha `VOZ:` do arquivo
 da história (ex.: `VOZ: pt-BR-AntonioNeural`). Precisa de internet.
 
 ## Regras de proteção
