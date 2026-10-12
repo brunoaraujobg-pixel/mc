@@ -154,6 +154,9 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
     eventos = []
     for b in blocos(palavras, PALAVRAS_POR_BLOCO):
+        # encolhe a fonte se o bloco não couber na largura (palavras longas)
+        chars = sum(len(p["t"]) for p in b) + len(b) - 1
+        tam_bloco = min(tam, int(largura * 0.88 / (0.68 * chars)))
         for k, atual in enumerate(b):
             ini = atual["i"]
             # a palavra fica em destaque até a próxima começar (sem "piscar")
@@ -168,11 +171,11 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                     partes.append(
                         f"{{\\c{cor_ass(COR_DESTAQUE)}\\fscx80\\fscy80"
                         f"\\t(0,90,\\fscx118\\fscy118)\\t(90,180,\\fscx105\\fscy105)}}"
-                        f"{txt}{{\\r}}"
+                        f"{txt}{{\\r\\fs{tam_bloco}}}"
                     )
                 else:
                     partes.append(txt)
-            texto = f"{{\\an5\\pos({pos_x},{pos_y})}}" + " ".join(partes)
+            texto = f"{{\\an5\\pos({pos_x},{pos_y})\\fs{tam_bloco}}}" + " ".join(partes)
             eventos.append(
                 f"Dialogue: 0,{tempo_ass(ini)},{tempo_ass(fim)},Legenda,,0,0,0,,{texto}"
             )

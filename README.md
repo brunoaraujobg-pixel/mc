@@ -15,3 +15,5 @@ Cada pasta na raiz é um projeto independente, com seu próprio `README.md`.
   do Piauí (Decreto 21.866/2023) a partir das fontes oficiais da SEFAZ.
 - [`legendas/`](legendas/) — gera legendas em lote em português: `.srt` para
   YouTube e vídeo com legenda animada (e link opcional) para Instagram/Reels.
+- [`montar-historia/`](montar-historia/) — junta cenas de vídeo geradas por IA em
+  uma história única, com efeitos sonoros, música, narração e legenda animada.
