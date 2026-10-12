@@ -208,6 +208,42 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     caminho.write_text(cab + "\n".join(eventos) + "\n", encoding="utf-8-sig")
 
 
+def tempo_srt(s):
+    ms = int(round(s * 1000))
+    h, ms = divmod(ms, 3_600_000)
+    m, ms = divmod(ms, 60_000)
+    s, ms = divmod(ms, 1000)
+    return f"{h:02}:{m:02}:{s:02},{ms:03}"
+
+
+def gerar_srt(trechos, caminho, max_palavras=6):
+    """trechos = [(inicio_s, fim_s, texto), ...] em tempo do vídeo final. Legenda para o YouTube."""
+    linhas, k = [], 1
+    for ini, fim, texto in trechos:
+        palavras = texto.split()
+        if not palavras:
+            continue
+        pesos = [len(p) + 2 for p in palavras]
+        total, t, marcas = sum(pesos), ini, []
+        for p, w in zip(palavras, pesos):
+            marcas.append((p, t, t + (fim - ini) * w / total))
+            t += (fim - ini) * w / total
+        bloco = []
+        for m in marcas:
+            bloco.append(m)
+            if len(bloco) >= max_palavras or m[0][-1] in ".?!":
+                linhas += [str(k), f"{tempo_srt(bloco[0][1])} --> {tempo_srt(bloco[-1][2])}",
+                           " ".join(b[0] for b in bloco), ""]
+                k += 1
+                bloco = []
+        if bloco:
+            linhas += [str(k), f"{tempo_srt(bloco[0][1])} --> {tempo_srt(bloco[-1][2])}",
+                       " ".join(b[0] for b in bloco), ""]
+            k += 1
+    caminho.write_text("\n".join(linhas), encoding="utf-8")
+    return k > 1
+
+
 # ------------------------------ montagem ------------------------------
 
 def montar_cena(cena, clip, sons, voz, config, temp, indice):
@@ -270,7 +306,7 @@ def montar_cena(cena, clip, sons, voz, config, temp, indice):
                       "-map", "[a]", "-t", f"{dur:.3f}", str(solo)], cwd=str(temp))
     else:
         rodar(base + [str(solo)], cwd=str(temp))
-    return saida, solo
+    return saida, solo, dur, (atraso_voz, dur_voz)
 
 
 def juntar(cenas_mp4, destino, temp):
@@ -352,6 +388,7 @@ def main():
 
     log(f"História '{arquivo.name}': {len(cenas)} cenas, formato {config['formato']}")
     prontas, solos, tem_voz = [], [], False
+    trechos_srt, inicio_cena = [], 0.0
     try:
         for i, c in enumerate(cenas, 1):
             log(f"Cena {i}/{len(cenas)}: {c['arquivo']}")
@@ -369,9 +406,13 @@ def main():
                 if not voz:
                     avisos.append(f"cena {i}: sem narração (voz indisponível)")
             tem_voz = tem_voz or bool(voz)
-            mp4, solo = montar_cena(c, c["clip"], sons, voz, config, temp, i)
+            mp4, solo, dur_cena, (atraso, dur_fala) = montar_cena(
+                c, c["clip"], sons, voz, config, temp, i)
             prontas.append(mp4)
             solos.append(solo)
+            if voz and c["fala"]:
+                trechos_srt.append((inicio_cena + atraso, inicio_cena + atraso + dur_fala, c["fala"]))
+            inicio_cena += dur_cena
 
         log("Juntando as cenas...")
         sem_musica = temp / "sem_musica.mp4"
@@ -392,6 +433,10 @@ def main():
         sys.exit(1)
 
     shutil.rmtree(temp, ignore_errors=True)
+    if trechos_srt:
+        srt = destino.with_suffix(".srt")
+        if gerar_srt(trechos_srt, srt):
+            log(f"Legenda do YouTube: {srt.name}")
     if config["titulo_miniatura"]:
         try:
             from miniatura import gerar_miniatura
