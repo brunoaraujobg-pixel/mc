@@ -1,1 +1,6 @@
+# Voz online (padrão, melhor qualidade):
 edge-tts==7.2.8
+
+# Voz OFFLINE - instale só se for usar (veja o README):
+#   piper-tts==1.8.0     (MOTOR_VOZ: piper)
+#   pyttsx3==2.99        (MOTOR_VOZ: windows)

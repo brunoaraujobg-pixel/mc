@@ -8,27 +8,37 @@ Uso:
   python ouvir_voz.py "Seu texto aqui"             (usa o seu texto)
   python ouvir_voz.py exemplos/historia.txt        (usa a 1ª FALA do arquivo da história)
   python ouvir_voz.py "Seu texto" --velocidade -10 (10% mais devagar; use +10 para mais rápido)
+  python ouvir_voz.py "Seu texto" --motor piper    (vozes OFFLINE do Piper)
+  python ouvir_voz.py "Seu texto" --motor windows  (vozes em português que já vêm no Windows)
 
 Ao gerar, ele TOCA as vozes uma depois da outra (Francisca, Antonio, Thalita) e depois abre a pasta.
 Para só gerar sem tocar, use --mudo.
 
-Resultado: saida/teste_voz/voz_francisca.mp3, voz_antonio.mp3, voz_thalita.mp3
+Resultado: saida/teste_voz/voz_<nome>.mp3 (ou .wav nos motores offline)
 """
 
-import asyncio
+import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 from montar_historia import abrir, ler_historia
+from motores_voz import MOTORES, VOZ_PADRAO, gerar_voz, vozes_windows
 
 BASE = Path(__file__).resolve().parent
 SAIDA = BASE / "saida" / "teste_voz"
-VOZES = {
+VOZES_EDGE = {
     "francisca": "pt-BR-FranciscaNeural",
     "antonio": "pt-BR-AntonioNeural",
     "thalita": "pt-BR-ThalitaNeural",
+}
+# Nomes de vozes pt_BR do Piper. Se alguma não existir mais, ela é só ignorada.
+# Veja a lista atual com:  python -m piper.download_voices
+VOZES_PIPER = {
+    "faber": "pt_BR-faber-medium",
+    "cadu": "pt_BR-cadu-medium",
+    "jeff": "pt_BR-jeff-medium",
 }
 TEXTO_EXEMPLO = "Maria e suas amigas caminhavam alegres pela floresta, quando tudo mudou."
 
@@ -73,44 +83,60 @@ def main():
     mudo = "--mudo" in args
     if mudo:
         args.remove("--mudo")
-
-    try:
-        import edge_tts
-    except ImportError:
-        print("Falta instalar: pip install -r requirements.txt")
-        sys.exit(1)
+    motor = "edge"
+    if "--motor" in args:
+        i = args.index("--motor")
+        try:
+            motor = args[i + 1].lower()
+        except IndexError:
+            motor = ""
+        if motor not in MOTORES:
+            print(f"Use assim: --motor {'|'.join(MOTORES)}")
+            sys.exit(1)
+        del args[i:i + 2]
 
     texto = escolher_texto(args)
     SAIDA.mkdir(parents=True, exist_ok=True)
+    print(f"Motor: {motor}")
     print(f"Texto: {texto}\n")
 
-    async def gerar(codigo, destino):
-        await edge_tts.Communicate(texto, codigo, rate=f"{velocidade:+d}%").save(str(destino))
-
-    feitos = 0
-    for nome, codigo in VOZES.items():
-        destino = SAIDA / f"voz_{nome}.mp3"
+    if motor == "edge":
+        vozes = VOZES_EDGE
+    elif motor == "piper":
+        vozes = VOZES_PIPER
+    else:
         try:
-            asyncio.run(gerar(codigo, destino))
-            print(f"  OK  {destino.name}")
-            feitos += 1
+            achadas = [n for n in vozes_windows()
+                       if "portug" in n.lower() or "pt-br" in n.lower() or "maria" in n.lower()]
         except Exception as e:
-            print(f"  ERRO em {nome}: {type(e).__name__}: {e}")
+            print(f"Não consegui listar as vozes do Windows ({e}). Falta: pip install pyttsx3")
+            sys.exit(1)
+        vozes = {re.sub(r"\W+", "_", n).strip("_").lower(): n for n in achadas}
+        if not vozes:
+            print("Nenhuma voz em português encontrada no Windows.")
+            sys.exit(1)
 
-    if feitos == 0:
-        print("\nNenhuma voz foi gerada. Confira a internet e tente de novo.")
+    feitos = []
+    for nome, codigo in vozes.items():
+        arq = gerar_voz(texto, motor, codigo, SAIDA / f"voz_{nome}.mp3", velocidade)
+        if arq:
+            print(f"  OK  {arq.name}")
+            feitos.append((nome, arq))
+        else:
+            print(f"  --  {nome}: não gerou")
+
+    if not feitos:
+        print("\nNenhuma voz foi gerada. Veja as mensagens acima.")
         sys.exit(1)
-    print(f"\nPronto: {feitos} voz(es) em {SAIDA}")
+    print(f"\nPronto: {len(feitos)} voz(es) em {SAIDA}")
 
     if not mudo and shutil.which("ffplay"):
         print("\nTocando uma depois da outra...")
-        for nome in VOZES:
-            arq = SAIDA / f"voz_{nome}.mp3"
-            if arq.is_file():
-                print(f"  ▶ {nome.capitalize()}")
-                if not tocar(arq):
-                    print("    (não consegui tocar; abra o arquivo pela pasta)")
-                    break
+        for nome, arq in feitos:
+            print(f"  ▶ {nome.capitalize()}")
+            if not tocar(arq):
+                print("    (não consegui tocar; abra o arquivo pela pasta)")
+                break
     elif not mudo:
         print("\n(ffplay não encontrado: abra os arquivos pela pasta. Ele vem com o FFmpeg.)")
     abrir(SAIDA)

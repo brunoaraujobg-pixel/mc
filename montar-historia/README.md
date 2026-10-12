@@ -41,7 +41,8 @@ TRANSICAO: fade              # fade = suave entre cenas; corte = corte seco (pad
 TRANSICAO_SEGUNDOS: 0.3
 ABAIXAR_MUSICA: sim          # música abaixa sozinha durante a narração (padrão: sim)
 LEGENDA: sim                 # legenda animada onde houver FALA
-VOZ: pt-BR-FranciscaNeural   # ou pt-BR-AntonioNeural, pt-BR-ThalitaNeural
+MOTOR_VOZ: edge              # edge (online) | piper (offline) | windows (offline)
+VOZ: pt-BR-FranciscaNeural   # nome da voz; depende do motor (veja abaixo)
 
 CENA | 01_caminhada.mp4 | SOM: passos_mata.mp3@0 | FALA: Texto narrado
 CENA | 04_raichu.mp4 | SOM: raio.mp3@1.5 | SOM: decolagem.mp3@3.5
@@ -57,11 +58,30 @@ Quer testar o texto e escolher a voz sem montar o vídeo inteiro?
 python ouvir_voz.py "Maria e suas amigas caminhavam alegres pela floresta."
 python ouvir_voz.py exemplos/historia.txt          (usa a 1ª FALA do arquivo)
 python ouvir_voz.py "Seu texto" --velocidade -10   (10% mais devagar; +10 = mais rápido)
+python ouvir_voz.py "Seu texto" --motor piper       (vozes offline; ou --motor windows)
 ```
 Ele gera o mesmo texto com as 3 vozes (Francisca, Antonio, Thalita) em `saida/teste_voz/`,
 **toca uma depois da outra** (diz o nome de cada uma na tela) e depois **abre a pasta**.
 Para só gerar, sem tocar, acrescente `--mudo`. O som usa o `ffplay`, que já vem com o FFmpeg. Depois, coloque a voz escolhida na linha `VOZ:` do arquivo
 da história (ex.: `VOZ: pt-BR-AntonioNeural`). Precisa de internet.
+
+## Voz OFFLINE (sem internet)
+O padrão (`MOTOR_VOZ: edge`) usa a voz da Microsoft e **precisa de internet**. Para trabalhar offline:
+
+| Motor | Qualidade | Instalar | Linha no arquivo da história |
+|---|---|---|---|
+| `piper` | Boa (neural) | `pip install piper-tts==1.8.0` | `MOTOR_VOZ: piper` e `VOZ: pt_BR-faber-medium` |
+| `windows` | Mais robótica | `pip install pyttsx3==2.99` | `MOTOR_VOZ: windows` e `VOZ: Maria` |
+
+- **Piper:** na **primeira vez** ele baixa a voz (internet só nessa vez) para a pasta `vozes/`; depois funciona
+  100% offline. Vozes em português do Brasil que eu conheço: `pt_BR-faber-medium`, `pt_BR-cadu-medium`,
+  `pt_BR-jeff-medium`. Para ver a lista atual: `python -m piper.download_voices`. O Piper é licenciado
+  como GPL-3.0 (sem problema para uso próprio).
+- **Windows:** usa as vozes que já vêm no sistema. Se não achar voz em português, adicione em
+  *Configurações > Hora e idioma > Fala > Adicionar vozes*.
+- Para ouvir antes de montar: `python ouvir_voz.py "Seu texto" --motor piper` (ou `--motor windows`).
+- Se a voz falhar, a cena fica sem narração e o programa avisa. Ele não trava.
+- Os motores offline gravam `.wav`; o resto do programa funciona igual.
 
 ## Regras de proteção
 - Antes de começar, confere se **todas as cenas existem**; se faltar alguma, lista e para.
@@ -90,6 +110,6 @@ desmonetização. Para gerar renda, prefira personagens originais.
 
 ## Evolução
 - **V2 (feita):** transição suave entre cenas e música que abaixa durante a fala.
-- **V2.1:** miniatura automática, voz offline.
+- **V2.1 (feita):** voz offline (Piper e Windows). **Próximo:** miniatura automática.
 - **V3:** gerar as cenas automaticamente por API oficial de vídeo (Runway/Luma/Kling) a partir dos prompts.
 - **V4:** roteiro por IA e rotina de publicação (com aprovação humana).

@@ -8,7 +8,6 @@ Uso:   python montar_historia.py exemplos/historia.txt
 Saída: saida/<nome-do-arquivo>/historia.mp4   (nunca sobrescreve: cria historia_2.mp4...)
 """
 
-import asyncio
 import os
 import platform
 import re
@@ -19,6 +18,8 @@ from datetime import datetime
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent
+sys.path.insert(0, str(BASE))
+from motores_voz import MOTORES, gerar_voz  # noqa: E402
 FPS = 30
 ABRIR_AO_TERMINAR = True     # abre o vídeo pronto sozinho (False = não abrir)
 COR_TEXTO = "FFFFFF"
@@ -78,7 +79,7 @@ def proximo_nome(pasta, base, ext):
 def ler_historia(caminho):
     """Retorna (config, cenas). Cena = {'arquivo', 'sons': [(nome, seg)], 'fala'}."""
     config = {"formato": "vertical", "musica": "", "volume_musica": 0.15,
-              "legenda": True, "voz": "pt-BR-FranciscaNeural",
+              "legenda": True, "voz": "", "motor_voz": "edge",
               "transicao": "corte", "transicao_segundos": 0.3, "abaixar_musica": True}
     cenas = []
     for n, bruta in enumerate(Path(caminho).read_text(encoding="utf-8-sig").splitlines(), 1):
@@ -119,6 +120,10 @@ def ler_historia(caminho):
             config["legenda"] = valor.lower() in ("sim", "s", "true", "1")
         elif chave == "voz":
             config["voz"] = valor
+        elif chave == "motor_voz":
+            if valor.lower() not in MOTORES:
+                raise ValueError(f"Linha {n}: MOTOR_VOZ deve ser edge, piper ou windows")
+            config["motor_voz"] = valor.lower()
         elif chave == "transicao":
             if valor.lower() not in ("fade", "corte"):
                 raise ValueError(f"Linha {n}: TRANSICAO deve ser fade ou corte")
@@ -135,21 +140,6 @@ def ler_historia(caminho):
 
 
 # ------------------------------ voz e legenda ------------------------------
-
-def fazer_voz(texto, voz, destino):
-    """Voz gratuita (edge-tts). Retorna True se deu certo."""
-    try:
-        import edge_tts
-
-        async def _go():
-            await edge_tts.Communicate(texto, voz).save(str(destino))
-
-        asyncio.run(_go())
-        return destino.is_file() and destino.stat().st_size > 0
-    except Exception as e:
-        print(f"   ! voz indisponível ({type(e).__name__}: {e}); cena fica sem narração")
-        return False
-
 
 def tempo_ass(s):
     cs = int(round(s * 100))
@@ -367,10 +357,9 @@ def main():
                     avisos.append(f"cena {i}: som não encontrado (sons/{nome}) - ignorado")
             voz = None
             if c["fala"]:
-                alvo = temp / f"voz_{i:02}.mp3"
-                if fazer_voz(c["fala"], config["voz"], alvo):
-                    voz = alvo
-                else:
+                voz = gerar_voz(c["fala"], config["motor_voz"], config["voz"],
+                                temp / f"voz_{i:02}.mp3")
+                if not voz:
                     avisos.append(f"cena {i}: sem narração (voz indisponível)")
             tem_voz = tem_voz or bool(voz)
             mp4, solo = montar_cena(c, c["clip"], sons, voz, config, temp, i)

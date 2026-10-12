@@ -6,7 +6,8 @@ TRANSICAO: fade            # fade = entra e sai do preto entre as cenas; corte =
 TRANSICAO_SEGUNDOS: 0.3
 ABAIXAR_MUSICA: sim        # a música abaixa sozinha quando há narração
 LEGENDA: sim               # só aparece onde houver FALA
-VOZ: pt-BR-FranciscaNeural # alternativas: pt-BR-AntonioNeural, pt-BR-ThalitaNeural
+MOTOR_VOZ: edge            # edge (online) | piper (offline) | windows (offline)
+VOZ: pt-BR-FranciscaNeural # edge: pt-BR-AntonioNeural, pt-BR-ThalitaNeural | piper: pt_BR-faber-medium | windows: Maria
 
 # ===== CENAS (na ordem do vídeo) =====
 # CENA | arquivo da cena (pasta cenas/) | SOM: arquivo@segundo | FALA: texto narrado
