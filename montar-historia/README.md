@@ -37,6 +37,9 @@ cenas/ (seus .mp4)  +  sons/ (efeitos)  +  musicas/  +  historia.txt
 FORMATO: vertical            # vertical (1080x1920) ou horizontal (1920x1080)
 MUSICA: musica_heroica.mp3   # opcional
 VOLUME_MUSICA: 0.15          # 0.15 = baixa
+TRANSICAO: fade              # fade = suave entre cenas; corte = corte seco (padrão)
+TRANSICAO_SEGUNDOS: 0.3
+ABAIXAR_MUSICA: sim          # música abaixa sozinha durante a narração (padrão: sim)
 LEGENDA: sim                 # legenda animada onde houver FALA
 VOZ: pt-BR-FranciscaNeural   # ou pt-BR-AntonioNeural, pt-BR-ThalitaNeural
 
@@ -86,6 +89,7 @@ desmonetização. Para gerar renda, prefira personagens originais.
 - **Não testado:** a voz real (edge-tts) — o ambiente não tem acesso. Teste no seu PC.
 
 ## Evolução
-- **V2:** transição entre cenas (fade), abaixar a música durante a fala, miniatura automática.
+- **V2 (feita):** transição suave entre cenas e música que abaixa durante a fala.
+- **V2.1:** miniatura automática, voz offline.
 - **V3:** gerar as cenas automaticamente por API oficial de vídeo (Runway/Luma/Kling) a partir dos prompts.
 - **V4:** roteiro por IA e rotina de publicação (com aprovação humana).

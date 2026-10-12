@@ -78,7 +78,8 @@ def proximo_nome(pasta, base, ext):
 def ler_historia(caminho):
     """Retorna (config, cenas). Cena = {'arquivo', 'sons': [(nome, seg)], 'fala'}."""
     config = {"formato": "vertical", "musica": "", "volume_musica": 0.15,
-              "legenda": True, "voz": "pt-BR-FranciscaNeural"}
+              "legenda": True, "voz": "pt-BR-FranciscaNeural",
+              "transicao": "corte", "transicao_segundos": 0.3, "abaixar_musica": True}
     cenas = []
     for n, bruta in enumerate(Path(caminho).read_text(encoding="utf-8-sig").splitlines(), 1):
         linha = bruta.split("#", 1)[0].strip()   # tira comentários
@@ -118,6 +119,14 @@ def ler_historia(caminho):
             config["legenda"] = valor.lower() in ("sim", "s", "true", "1")
         elif chave == "voz":
             config["voz"] = valor
+        elif chave == "transicao":
+            if valor.lower() not in ("fade", "corte"):
+                raise ValueError(f"Linha {n}: TRANSICAO deve ser fade ou corte")
+            config["transicao"] = valor.lower()
+        elif chave == "transicao_segundos":
+            config["transicao_segundos"] = float(valor.replace(",", "."))
+        elif chave == "abaixar_musica":
+            config["abaixar_musica"] = valor.lower() in ("sim", "s", "true", "1")
         else:
             print(f"   ! linha {n} não entendida: '{bruta.strip()}'")
     if not cenas:
@@ -220,6 +229,9 @@ def montar_cena(cena, clip, sons, voz, config, temp, indice):
         ass = temp / f"cena_{indice:02}.ass"
         gerar_ass(cena["fala"], atraso_voz, atraso_voz + dur_voz, largura, altura, ass)
         vf += f",subtitles={ass.name}"
+    if config["transicao"] == "fade":   # entra e sai do preto (suave entre as cenas)
+        t = min(config["transicao_segundos"], dur / 3)
+        vf += f",fade=t=in:st=0:d={t:.3f},fade=t=out:st={dur - t:.3f}:d={t:.3f}"
     vf += ",format=yuv420p"
 
     entradas = ["-i", str(clip), "-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo"]
@@ -249,7 +261,19 @@ def montar_cena(cena, clip, sons, voz, config, temp, indice):
            "-c:v", "libx264", "-preset", "medium", "-crf", "20",
            "-c:a", "aac", "-b:a", "192k", "-ar", "44100", "-ac", "2",
            str(saida)], cwd=str(temp))
-    return saida
+
+    # trilha só com a voz (silêncio onde não há fala): serve para abaixar a música
+    solo = temp / f"vozsolo_{indice:02}.wav"
+    base = ["ffmpeg", "-y", "-f", "lavfi", "-t", f"{dur:.3f}", "-i", "anullsrc=r=44100:cl=stereo"]
+    if voz:
+        ms = int(atraso_voz * 1000)
+        rodar(base + ["-i", str(voz), "-filter_complex",
+                      f"[1:a]aresample=44100,aformat=channel_layouts=stereo,adelay={ms}|{ms}[v];"
+                      f"[0:a][v]amix=inputs=2:normalize=0:duration=first[a]",
+                      "-map", "[a]", "-t", f"{dur:.3f}", str(solo)], cwd=str(temp))
+    else:
+        rodar(base + [str(solo)], cwd=str(temp))
+    return saida, solo
 
 
 def juntar(cenas_mp4, destino, temp):
@@ -259,14 +283,28 @@ def juntar(cenas_mp4, destino, temp):
            "-c", "copy", str(destino.resolve())], cwd=str(temp))
 
 
-def por_musica(video, musica, volume, destino):
+def juntar_vozes(solos, destino, temp):
+    lista = temp / "lista_voz.txt"
+    lista.write_text("".join(f"file '{c.name}'\n" for c in solos), encoding="utf-8")
+    rodar(["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", "lista_voz.txt",
+           "-c", "copy", str(destino.resolve())], cwd=str(temp))
+
+
+def por_musica(video, musica, volume, destino, voz_total=None):
+    """Mistura a música. Se voz_total existir, a música abaixa sozinha quando há fala."""
     total = duracao(video)
     fade = min(2.0, total / 2)
-    rodar(["ffmpeg", "-y", "-i", str(video), "-stream_loop", "-1", "-i", str(musica),
-           "-filter_complex",
-           f"[1:a]aresample=44100,aformat=channel_layouts=stereo,volume={volume},"
-           f"afade=t=out:st={total - fade:.3f}:d={fade:.3f}[m];"
-           f"[0:a][m]amix=inputs=2:normalize=0:duration=first,alimiter=limit=0.95[a]",
+    entradas = ["-i", str(video), "-stream_loop", "-1", "-i", str(musica)]
+    musica_f = (f"[1:a]aresample=44100,aformat=channel_layouts=stereo,volume={volume},"
+                f"afade=t=out:st={total - fade:.3f}:d={fade:.3f}")
+    if voz_total:
+        entradas += ["-i", str(voz_total)]
+        filtro = (musica_f + "[m0];[2:a]aformat=channel_layouts=stereo[sc];"
+                  "[m0][sc]sidechaincompress=threshold=0.02:ratio=8:attack=30:release=600[m];")
+    else:
+        filtro = musica_f + "[m];"
+    filtro += "[0:a][m]amix=inputs=2:normalize=0:duration=first,alimiter=limit=0.95[a]"
+    rodar(["ffmpeg", "-y", *entradas, "-filter_complex", filtro,
            "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
            "-t", f"{total:.3f}", str(destino)])
 
@@ -316,7 +354,7 @@ def main():
             f.write(linha + "\n")
 
     log(f"História '{arquivo.name}': {len(cenas)} cenas, formato {config['formato']}")
-    prontas = []
+    prontas, solos, tem_voz = [], [], False
     try:
         for i, c in enumerate(cenas, 1):
             log(f"Cena {i}/{len(cenas)}: {c['arquivo']}")
@@ -334,7 +372,10 @@ def main():
                     voz = alvo
                 else:
                     avisos.append(f"cena {i}: sem narração (voz indisponível)")
-            prontas.append(montar_cena(c, c["clip"], sons, voz, config, temp, i))
+            tem_voz = tem_voz or bool(voz)
+            mp4, solo = montar_cena(c, c["clip"], sons, voz, config, temp, i)
+            prontas.append(mp4)
+            solos.append(solo)
 
         log("Juntando as cenas...")
         sem_musica = temp / "sem_musica.mp4"
@@ -342,7 +383,11 @@ def main():
         destino = proximo_nome(pasta, "historia", ".mp4")
         if musica:
             log("Colocando a música de fundo...")
-            por_musica(sem_musica, musica, config["volume_musica"], destino)
+            voz_total = None
+            if tem_voz and config["abaixar_musica"]:
+                voz_total = temp / "voz_total.wav"
+                juntar_vozes(solos, voz_total, temp)
+            por_musica(sem_musica, musica, config["volume_musica"], destino, voz_total)
         else:
             shutil.copy(sem_musica, destino)
     except Exception as e:
